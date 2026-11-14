@@ -257,10 +257,9 @@ The output takes about 350 MB unpacked and 155 MB zipped. It contains
 `Veu.exe`, `anonimizar.exe`, the name model, OCR, the dictionaries, the sample
 policy and the Portuguese `LEIA-ME.md`.
 
-**macOS and Linux:** PyInstaller must run on each OS. The workflow
-[.github/workflows/construir.yml](.github/workflows/construir.yml) builds on
-all three, but **only runs when triggered manually** (GitHub *Actions* tab).
-The macOS and Linux builds have not yet been tested on real machines.
+**macOS and Linux:** there are no builds for these systems yet. PyInstaller
+must run on each operating system, so `construir.ps1` only produces the Windows
+version.
 
 ## Tests
 
@@ -303,11 +302,18 @@ into a folder for manual testing:
   ([tests/test_regressao_pymupdf.py](tests/test_regressao_pymupdf.py)) catches
   the problem if the version is upgraded.
 
-## Third-party licenses
+## License
+
+Véu is distributed under the **AGPL-3.0** (see [LICENSE](LICENSE)). The full
+source code is available in this repository. Anyone who modifies Véu and
+distributes it, or offers it to others over a network, must make the source
+code of their changes available under the same license.
+
+### Third-party licenses
 
 | Component | License |
 |---|---|
-| PyMuPDF / MuPDF | AGPL-3.0 (internal use; distributing to third parties requires publishing the source code under AGPL or buying Artifex's commercial license) |
+| PyMuPDF / MuPDF | AGPL-3.0 |
 | PySide6 (Qt) | LGPL-3.0 |
 | spaCy | MIT |
 | `pt_core_news_md` model | CC BY-SA 4.0 |

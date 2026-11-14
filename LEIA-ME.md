@@ -253,10 +253,9 @@ O resultado ocupa cerca de 350 MB em pasta e 155 MB compactado. Dentro dela
 estão `Veu.exe`, `anonimizar.exe`, o modelo de nomes, o OCR, os dicionários, a
 política de exemplo e este LEIA-ME.
 
-**macOS e Linux:** o PyInstaller precisa rodar em cada sistema. O workflow
-[.github/workflows/construir.yml](.github/workflows/construir.yml) constrói nos
-três sistemas, mas **só roda quando acionado manualmente** (aba *Actions* do
-GitHub). Os builds de macOS e Linux ainda não foram testados em máquina real.
+**macOS e Linux:** ainda não há builds para esses sistemas. O PyInstaller
+precisa rodar em cada sistema operacional, então o `construir.ps1` gera apenas a
+versão para Windows.
 
 ## Testes
 
@@ -299,11 +298,18 @@ Para gerá-los numa pasta e testar manualmente:
   ([tests/test_regressao_pymupdf.py](tests/test_regressao_pymupdf.py)) detecta o
   problema caso a versão seja atualizada.
 
-## Licenças de terceiros
+## Licença
+
+O Véu é distribuído sob a **AGPL-3.0** (veja [LICENSE](LICENSE)). O código-fonte
+completo está disponível neste repositório. Quem modificar o Véu e distribuí-lo,
+ou oferecê-lo a terceiros por rede, deve disponibilizar o código-fonte das
+modificações sob a mesma licença.
+
+### Licenças de terceiros
 
 | Componente | Licença |
 |---|---|
-| PyMuPDF / MuPDF | AGPL-3.0 (uso interno; para distribuir a terceiros é preciso publicar o código-fonte sob AGPL ou comprar a licença comercial da Artifex) |
+| PyMuPDF / MuPDF | AGPL-3.0 |
 | PySide6 (Qt) | LGPL-3.0 |
 | spaCy | MIT |
 | Modelo `pt_core_news_md` | CC BY-SA 4.0 |
