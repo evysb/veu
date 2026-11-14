@@ -1,0 +1,7 @@
+# Siglas de saúde marcadas mesmo sem contexto clínico por perto.
+HIV
+AIDS
+SIDA
+HPV
+DPOC
+TDAH

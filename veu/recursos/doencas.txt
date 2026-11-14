@@ -1,0 +1,131 @@
+# Doenças e condições de saúde sensíveis (um termo por linha).
+# Termos de até 3 letras (siglas) só são marcados com contexto clínico por perto,
+# exceto os listados em siglas_fortes.txt.
+HIV
+AIDS
+SIDA
+soropositivo
+soropositiva
+sorologia positiva
+sífilis
+gonorreia
+clamídia
+herpes genital
+HPV
+hepatite
+hepatite B
+hepatite C
+tuberculose
+hanseníase
+câncer
+cancer
+neoplasia
+neoplasia maligna
+carcinoma
+adenocarcinoma
+linfoma
+leucemia
+melanoma
+sarcoma
+mieloma
+metástase
+metástases
+tumor
+diabetes
+diabetes mellitus
+diabético
+diabética
+hipertensão
+hipertensão arterial
+hipertenso
+hipertensa
+DPOC
+asma
+insuficiência cardíaca
+insuficiência renal
+doença renal crônica
+cirrose
+AVC
+acidente vascular cerebral
+infarto
+infarto agudo do miocárdio
+epilepsia
+convulsão
+doença de Alzheimer
+Alzheimer
+doença de Parkinson
+Parkinson
+demência
+esclerose múltipla
+esclerose lateral amiotrófica
+autismo
+transtorno do espectro autista
+TDAH
+depressão
+transtorno depressivo
+episódio depressivo
+transtorno bipolar
+esquizofrenia
+psicose
+transtorno de ansiedade
+ansiedade generalizada
+síndrome do pânico
+transtorno obsessivo-compulsivo
+transtorno de personalidade
+borderline
+anorexia
+anorexia nervosa
+bulimia
+dependência química
+alcoolismo
+etilismo
+etilista
+tabagismo
+drogadição
+uso de substâncias
+ideação suicida
+tentativa de suicídio
+suicídio
+automutilação
+autolesão
+gestante
+gestação
+gravidez
+grávida
+aborto
+abortamento
+interrupção da gravidez
+puerpério
+puérpera
+infertilidade
+lúpus
+lúpus eritematoso sistêmico
+artrite reumatoide
+psoríase
+doença de Crohn
+retocolite ulcerativa
+obesidade
+obesidade mórbida
+anemia falciforme
+hemofilia
+fibrose cística
+síndrome de Down
+COVID-19
+covid
+dengue
+zika
+chikungunya
+malária
+doença de Chagas
+leishmaniose
+meningite
+sepse
+pneumonia
+transtorno alimentar
+deficiência intelectual
+paralisia cerebral
+transexualidade
+disforia de gênero
+violência sexual
+estupro
+abuso sexual

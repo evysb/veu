@@ -1,0 +1,41 @@
+# Termos clínicos de CONTEXTO: não são tarjados sozinhos; aumentam a confiança
+# das detecções de saúde (e de CID) que estiverem por perto.
+diagnóstico
+diagnóstica
+hipótese diagnóstica
+HD
+laudo
+prontuário
+exame
+exames
+resultado
+sorologia
+biópsia
+anatomopatológico
+CID
+internação
+internado
+internada
+alta hospitalar
+tratamento
+prescrição
+receita
+receituário
+posologia
+queixa
+anamnese
+evolução
+comorbidade
+comorbidades
+antecedentes
+paciente
+consulta
+atendimento
+médico
+médica
+enfermagem
+atestado
+afastamento
+uso contínuo
+em uso de
+faz uso

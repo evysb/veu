@@ -1,0 +1,85 @@
+# Política do Véu (anonimizador de PDF).
+# Edite pela tela Configurações ou manualmente; o arquivo é validado ao carregar.
+versao: 1
+nome: Política de exemplo — Hospital Fictício
+bloqueada: false
+usar_ner: true
+tipos:
+  CPF:
+    ativo: true
+    confianca_minima: 0.5
+  CNPJ:
+    ativo: true
+    confianca_minima: 0.5
+  RG:
+    ativo: true
+    confianca_minima: 0.5
+  CNH:
+    ativo: true
+    confianca_minima: 0.5
+  TITULO_ELEITOR:
+    ativo: true
+    confianca_minima: 0.5
+  PIS:
+    ativo: true
+    confianca_minima: 0.5
+  CNS:
+    ativo: true
+    confianca_minima: 0.5
+  PASSAPORTE:
+    ativo: true
+    confianca_minima: 0.5
+  NOME:
+    ativo: true
+    confianca_minima: 0.6
+  ENDERECO:
+    ativo: true
+    confianca_minima: 0.5
+  TELEFONE:
+    ativo: true
+    confianca_minima: 0.5
+  EMAIL:
+    ativo: true
+    confianca_minima: 0.5
+  DATA_NASCIMENTO:
+    ativo: true
+    confianca_minima: 0.5
+  PLACA:
+    ativo: false
+    confianca_minima: 0.5
+  SAUDE:
+    ativo: true
+    confianca_minima: 0.5
+  CRM:
+    ativo: true
+    confianca_minima: 0.5
+  CONTA_BANCARIA:
+    ativo: true
+    confianca_minima: 0.5
+  PIX:
+    ativo: true
+    confianca_minima: 0.5
+tipos_personalizados:
+- nome: Matrícula funcionário
+  regex: MAT-\d{6}
+  id: MATRICULA_FUNCIONARIO
+  rotulo: '[MATRÍCULA FUNCIONÁRIO]'
+  cor: '#1E88E5'
+  ativo: true
+  ignorar_maiusculas: false
+- nome: Número de prontuário
+  regex: PRONT-\d{5,8}
+  id: NUMERO_DE_PRONTUARIO
+  rotulo: '[NÚMERO DE PRONTUÁRIO]'
+  cor: '#6A1B9A'
+  ativo: true
+  ignorar_maiusculas: true
+sempre_tarjar:
+- Projeto Águia
+- Cliente ACME
+excecoes:
+- Hospital Fictício Maria Helena
+- Clínica Exemplo Ltda
+tarja:
+  estilo: preta
+  vetores: cobertos
