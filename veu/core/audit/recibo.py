@@ -69,6 +69,8 @@ class Recibo:
     # Só preenchidos se a política permitir (nomes podem conter dados pessoais).
     arquivo_original: str = ""
     arquivo_resultado: str = ""
+    # Estilo "pessoas": só QUANTAS pessoas receberam rótulo ([P1]…), nunca quem.
+    pessoas_rotuladas: int = 0
     extras: dict = field(default_factory=dict)
 
 
@@ -100,6 +102,7 @@ def criar_recibo(analise, resultado, revisao=None, modo: str = "interface") -> R
         residuais_novos=len(v.residuais_novos) if v else 0,
         arquivo_original=os.path.abspath(analise.caminho) if registrar_nomes else "",
         arquivo_resultado=os.path.abspath(resultado.caminho_saida) if registrar_nomes else "",
+        pessoas_rotuladas=getattr(resultado, "pessoas", 0),
     )
 
 
@@ -144,6 +147,7 @@ _COLUNAS = [
     ("adicionadas_manualmente", "Adicionadas manualmente"),
     ("removidas_manualmente", "Removidas manualmente"),
     ("estilo_tarja", "Estilo da tarja"),
+    ("pessoas_rotuladas", "Pessoas rotuladas"),
     ("verificacao_ok", "Verificação aprovada"),
     ("vazamentos", "Vazamentos"),
     ("residuais_novos", "Possíveis dados sem tarja"),

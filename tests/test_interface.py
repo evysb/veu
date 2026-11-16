@@ -85,3 +85,21 @@ def test_historico_lista_recibos(qtbot, pdfs, tmp_path):
     assert d.tabela.rowCount() == 1
     assert d.tabela.item(0, 6).text() == "aprovada"
     assert "SHA-256" in d.tabela.item(0, 3).text()  # sem nome de arquivo por padrão
+
+
+def test_painel_mostra_pessoa_e_menu_junta(qtbot, janela, pdfs):
+    from PySide6.QtWidgets import QMenu
+
+    abrir(qtbot, janela, pdfs["prontuario"])
+    janela.revisao.aceitar_pendentes()
+    janela._atualizar_tudo()
+    modelo = janela.painel.modelo
+    col = modelo.columnCount() - 1
+    nomes = [r for r in range(modelo.rowCount()) if modelo.deteccao(r).tipo == "NOME"]
+    assert nomes
+    assert all(modelo.index(r, col).data().startswith("[P") for r in nomes)
+
+    ids = [modelo.deteccao(r).id for r in nomes]
+    menu = QMenu()
+    janela._menu_pessoas(menu, ids[:1])
+    assert any(a.text().startswith("Renomear pessoa [P") for a in menu.actions())

@@ -74,14 +74,38 @@ Veu.exe                                       # versão empacotada
    - navegue com **PgUp/PgDown**; zoom com **Ctrl + roda do mouse**,
      **Ctrl+/Ctrl−** e **Ctrl+0** (ajustar à largura).
 4. **Anonimizar:** *Anonimizar e salvar…* (Ctrl+S). Escolha o estilo da tarja
-   (preta lisa ou com rótulo, como `[CPF]`, `[NOME]`, `[SAÚDE]`) e confirme que
-   revisou o documento.
+   (preta lisa; com rótulo, como `[CPF]`, `[NOME]`, `[SAÚDE]`; ou com rótulo e
+   pessoas numeradas, veja abaixo) e confirme que revisou o documento.
 5. **Salvar:** o padrão é `arquivo_anonimizado.pdf` na mesma pasta. **O original
    nunca é sobrescrito.**
 
 Ao final, o Véu **reabre o PDF gerado**, confirma que nada do que foi tarjado
 pode ser extraído e roda os detectores outra vez para apontar dados que tenham
 ficado sem tarja.
+
+### Pessoas numeradas (`[P1]`, `[P2]`…)
+
+No estilo *Tipo do dado, com cada pessoa numerada*, todas as ocorrências da
+mesma pessoa recebem o mesmo rótulo. Assim o texto continua legível
+(“[P1] relata que [P2]…”) sem revelar quem é quem. Os demais dados mantêm o
+rótulo do tipo (`[CPF]`, `[SAÚDE]`…).
+
+- Variações do nome são agrupadas automaticamente, ignorando acentos,
+  maiúsculas, pronomes de tratamento (“Sr.”, “Dra.”) e conectores (“da”,
+  “dos”): “Maria Aparecida Souza”, “Sra. Souza” e “MARIA APARECIDA DE SOUZA”
+  viram `[P1]`. Um nome parcial que pode ser de mais de uma pessoa (“Maria”,
+  havendo “Maria Souza” e “Maria Lima”) ganha um rótulo próprio.
+- A numeração segue a ordem da primeira aparição e conta só os nomes que serão
+  tarjados. A coluna *Pessoa* da lista lateral mostra o rótulo de cada nome.
+- Com o botão direito sobre um ou mais nomes (na página ou na lista):
+  **Renomear pessoa…** (ex.: `[PACIENTE]`, vale para todas as ocorrências;
+  rótulos com parte do nome da pessoa são recusados),
+  **Juntar como a mesma pessoa** ou **Separar como outra pessoa**.
+- A ligação entre rótulos e nomes existe só na memória durante a revisão.
+  Ela nunca é gravada no PDF, no recibo de auditoria nem em outro lugar.
+
+Nomes marcados por *Buscar termo → Marcar todas* ou pela lista *Sempre tarjar*
+são do tipo “Termo marcado” e continuam com o rótulo `[TARJA]`.
 
 ### O que a anonimização faz
 
@@ -114,10 +138,15 @@ ficado sem tarja.
 | **E-mail** | formato de endereço de e-mail |
 | **Data de nascimento** | datas perto de “nascimento”, “DN”, “nascido em”… |
 | **Placa de veículo** | modelo antigo e Mercosul |
-| **Dado de saúde** | CID-10 (após “CID” ou com contexto clínico), doenças e condições sensíveis, medicamentos |
+| **Dado de saúde** (desligado por padrão) | CID-10 (após “CID” ou com contexto clínico), doenças e condições sensíveis, medicamentos |
 | **Registro profissional** | CRM, CRO, COREN, CRP, CRF… |
 | **Dados bancários** | agência e conta perto das palavras-chave |
 | **Chave Pix** | chave aleatória (UUID) ou valor após “chave Pix” |
+
+**Dados de saúde vêm desligados por padrão**: eles continuam no PDF
+anonimizado. Para tarjá-los, ative o tipo em *Configurações… → Tipos de dado* ou
+no arquivo de política (`SAUDE: ativo: true`). Uma política que já o lista como
+ativo continua valendo.
 
 **Termos clínicos genéricos** (“laudo”, “exame”, “diagnóstico”, “prontuário”)
 **não são tarjados sozinhos**: eles só aumentam a confiança das detecções de
@@ -197,7 +226,8 @@ A cada anonimização, o Véu grava um **recibo** em
 - número de páginas, incluindo quantas passaram por OCR;
 - quantidade de tarjas por tipo;
 - quantas marcações foram adicionadas e quantas foram rejeitadas manualmente;
-- estilo da tarja;
+- estilo da tarja e, no estilo de pessoas numeradas, quantas pessoas foram
+  rotuladas (nunca quem);
 - resultado da verificação;
 - versão do programa e da política.
 
@@ -217,6 +247,7 @@ anonimizar laudo.pdf                                   # só analisa e lista o q
 anonimizar laudo.pdf --sem-revisao                     # gera laudo_anonimizado.pdf
 anonimizar laudos\ --pasta-saida anonimizados --sem-revisao --politica politica.yaml
 anonimizar entrada.pdf --saida saida.pdf --sem-revisao --estilo rotulo
+anonimizar entrada.pdf --sem-revisao --estilo pessoas  # nomes viram [P1], [P2]…
 anonimizar --historico-csv historico.csv
 anonimizar --help
 ```

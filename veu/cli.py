@@ -74,7 +74,12 @@ def construir_parser() -> argparse.ArgumentParser:
     p.add_argument("--saida", help="arquivo de saída (só com um PDF de entrada)")
     p.add_argument("--pasta-saida", help="pasta para os PDFs anonimizados (padrão: ao lado de cada original)")
     p.add_argument("--sem-revisao", action="store_true", help="tarja todas as detecções sem revisão humana (com aviso)")
-    p.add_argument("--estilo", choices=["preta", "rotulo"], help="estilo da tarja (padrão: o da política)")
+    p.add_argument(
+        "--estilo",
+        choices=["preta", "rotulo", "pessoas"],
+        help="estilo da tarja: preta, rotulo ([CPF], [NOME]…) ou pessoas (como rotulo, mas cada pessoa vira [P1], [P2]…); "
+        "padrão: o da política",
+    )
     p.add_argument("--senha", help="senha do(s) PDF(s), se protegidos")
     p.add_argument("--sem-ocr", action="store_true", help="não aplicar OCR em páginas escaneadas")
     p.add_argument("--mostrar-trechos", action="store_true", help="na análise, mostra os trechos completos")

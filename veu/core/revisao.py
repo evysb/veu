@@ -9,7 +9,7 @@ from __future__ import annotations
 from collections import Counter
 from typing import Iterable
 
-from veu.core import busca
+from veu.core import busca, pessoas
 from veu.core.models import Analise, Deteccao, Origem, Rect, Status
 
 
@@ -18,6 +18,11 @@ class Revisao:
         self.analise = analise
         self.adicionadas_manualmente = 0
         self.removidas_manualmente = 0
+        # Pessoas (estilo de tarja PESSOAS): grupo de cada nome e rótulos
+        # escolhidos pelo usuário. Só em memória; nunca são gravados.
+        self.grupo_por_id: dict[str, str] = pessoas.agrupar(analise.deteccoes)
+        self.rotulo_por_grupo: dict[str, str] = {}
+        self._proximo_grupo = len(set(self.grupo_por_id.values())) + 1
 
     # ---- consulta -------------------------------------------------------
     @property
@@ -108,6 +113,78 @@ class Revisao:
         self.deteccoes.extend(novas)
         self.adicionadas_manualmente += len(novas)
         return novas
+
+    # ---- pessoas ([P1], [P2]…) -------------------------------------------
+    def rotulos_pessoas(self) -> dict[str, str]:
+        """Rótulo de cada grupo com ao menos um nome a tarjar, em ordem de aparição."""
+        primeiro: dict[str, tuple] = {}
+        for d in self.deteccoes:
+            g = self.grupo_por_id.get(d.id)
+            if g is None or not d.ativa:
+                continue
+            pos = pessoas.ordem_no_documento(d)
+            if g not in primeiro or pos < primeiro[g]:
+                primeiro[g] = pos
+        ordem = sorted(primeiro, key=primeiro.__getitem__)
+        return {g: self.rotulo_por_grupo.get(g) or f"[P{n}]" for n, g in enumerate(ordem, start=1)}
+
+    def rotulo_por_id(self) -> dict[str, str]:
+        """Rótulo de cada nome que será tarjado (entrada de ``OpcoesAnonimizacao``)."""
+        rotulos = self.rotulos_pessoas()
+        return {
+            d.id: rotulos[g]
+            for d in self.deteccoes
+            if d.ativa and (g := self.grupo_por_id.get(d.id)) in rotulos
+        }
+
+    def grupo_de(self, id_: str) -> str | None:
+        return self.grupo_por_id.get(id_)
+
+    def nomes_do_grupo(self, grupo: str) -> list[str]:
+        return [d.trecho for d in self.deteccoes if self.grupo_por_id.get(d.id) == grupo]
+
+    def renomear_pessoa(self, grupo: str, rotulo: str) -> str:
+        """Define o rótulo da pessoa; texto vazio volta à numeração automática."""
+        if not rotulo.strip("[] \t"):
+            self.rotulo_por_grupo.pop(grupo, None)
+            return self.rotulos_pessoas().get(grupo, "")
+        novo = pessoas.validar_rotulo(rotulo, self.nomes_do_grupo(grupo))
+        outros = {r for g, r in self.rotulos_pessoas().items() if g != grupo}
+        if novo in outros:
+            raise pessoas.RotuloInvalido(
+                f"Outra pessoa já usa o rótulo {novo}. Para tratá-las como a mesma pessoa, use “Juntar”."
+            )
+        self.rotulo_por_grupo[grupo] = novo
+        return novo
+
+    def juntar_pessoas(self, ids: Iterable[str]) -> str | None:
+        """Junta os grupos das detecções indicadas no grupo que aparece primeiro."""
+        grupos = [g for g in dict.fromkeys(self.grupo_por_id.get(i) for i in ids) if g]
+        if len(grupos) < 2:
+            return grupos[0] if grupos else None
+        ordem = list(self.rotulos_pessoas())
+        grupos.sort(key=lambda g: ordem.index(g) if g in ordem else len(ordem))
+        destino = grupos[0]
+        rotulo = next((self.rotulo_por_grupo[g] for g in grupos if g in self.rotulo_por_grupo), None)
+        for id_, g in self.grupo_por_id.items():
+            if g in grupos:
+                self.grupo_por_id[id_] = destino
+        for g in grupos[1:]:
+            self.rotulo_por_grupo.pop(g, None)
+        if rotulo:
+            self.rotulo_por_grupo[destino] = rotulo
+        return destino
+
+    def separar_pessoa(self, ids: Iterable[str]) -> str | None:
+        """Move as detecções indicadas para uma pessoa nova."""
+        alvo = [i for i in ids if i in self.grupo_por_id]
+        if not alvo:
+            return None
+        novo = f"g{self._proximo_grupo}"
+        self._proximo_grupo += 1
+        for i in alvo:
+            self.grupo_por_id[i] = novo
+        return novo
 
     def _ja_coberto(self, pagina: int, rects: list[Rect]) -> bool:
         """Evita duplicar uma marcação idêntica já existente e ativa."""

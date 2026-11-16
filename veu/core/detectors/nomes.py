@@ -51,6 +51,11 @@ _PARADAS = {
 }
 
 
+def _eh_parada(palavra_normalizada: str) -> bool:
+    """Rótulo de campo, inclusive com hífen ("CRM-SP", "RG-SSP")."""
+    return palavra_normalizada in _PARADAS or palavra_normalizada.split("-", 1)[0] in _PARADAS
+
+
 # --------------------------------------------------------------------- NER
 _nlp = None
 _nlp_erro: str | None = None
@@ -163,7 +168,7 @@ class DetectorNome(Detector):
             palavras = [k for k in idx if norm[k] not in _CONECTORES]
             if not palavras or any(not tokens[k][2][0].isupper() for k in palavras):
                 continue
-            if any(norm[k] in _PARADAS for k in palavras) or self._precedido_por_lugar(tokens, norm, idx[0]):
+            if any(_eh_parada(norm[k]) for k in palavras) or self._precedido_por_lugar(tokens, norm, idx[0]):
                 continue
             conf = 0.55 if len(palavras) >= 2 else 0.3
             if any(norm[k] in self._sobrenomes for k in palavras):
@@ -226,7 +231,7 @@ class DetectorNome(Detector):
                     k += 1
                     continue
                 break
-            if palavra[0].isupper() and len(palavra) >= 2 and norm[k] not in _PARADAS:
+            if palavra[0].isupper() and len(palavra) >= 2 and not _eh_parada(norm[k]):
                 fim = k
                 k += 1
                 continue

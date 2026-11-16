@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from PySide6.QtCore import QAbstractTableModel, QItemSelectionModel, QModelIndex, QSortFilterProxyModel, Qt, Signal
+from PySide6.QtCore import QAbstractTableModel, QItemSelectionModel, QModelIndex, QPoint, QSortFilterProxyModel, Qt, Signal
 from PySide6.QtGui import QColor, QPixmap
 from PySide6.QtWidgets import (
     QAbstractItemView,
@@ -20,7 +20,7 @@ from PySide6.QtWidgets import (
 from veu.core.models import Deteccao, Origem, Status
 from veu.core.tipos import obter_tipo
 
-COLUNAS = ["Tipo", "Pág.", "Trecho", "Conf.", "Status"]
+COLUNAS = ["Tipo", "Pág.", "Trecho", "Conf.", "Status", "Pessoa"]
 NOMES_STATUS = {Status.PENDENTE: "Pendente", Status.ACEITA: "Aceita", Status.REJEITADA: "Rejeitada"}
 CORES_STATUS = {Status.PENDENTE: "#B26A00", Status.ACEITA: "#2E7D32", Status.REJEITADA: "#8A949A"}
 NOMES_ORIGEM = {Origem.AUTOMATICA: "automática", Origem.MANUAL: "manual", Origem.BUSCA: "busca"}
@@ -37,9 +37,11 @@ class ModeloDeteccoes(QAbstractTableModel):
         super().__init__()
         self._dets: list[Deteccao] = []
         self._icones: dict[str, QPixmap] = {}
+        self._pessoas: dict[str, str] = {}
 
-    def definir(self, deteccoes: list[Deteccao]) -> None:
+    def definir(self, deteccoes: list[Deteccao], pessoas: dict[str, str] | None = None) -> None:
         self.beginResetModel()
+        self._pessoas = pessoas or {}
         self._dets = sorted(deteccoes, key=lambda d: (d.pagina, d.rects[0][1] if d.rects else 0, d.rects[0][0] if d.rects else 0))
         self.endResetModel()
 
@@ -71,6 +73,8 @@ class ModeloDeteccoes(QAbstractTableModel):
                 return f"{d.confianca:.0%}"
             if col == 4:
                 return NOMES_STATUS[d.status]
+            if col == 5:
+                return self._pessoas.get(d.id, "")
         if papel == Qt.DecorationRole and col == 0:
             cor = obter_tipo(d.tipo).cor
             if cor not in self._icones:
@@ -85,7 +89,7 @@ class ModeloDeteccoes(QAbstractTableModel):
             return f"{obter_tipo(d.tipo).nome} — página {d.pagina + 1}\n{d.trecho}\nOrigem: {NOMES_ORIGEM[d.origem]}"
         if papel == Qt.UserRole:
             return d.id
-        if papel == Qt.TextAlignmentRole and col in (1, 3):
+        if papel == Qt.TextAlignmentRole and col in (1, 3, 5):
             return int(Qt.AlignCenter)
         return None
 
@@ -105,6 +109,7 @@ class PainelDeteccoes(QWidget):
     statusSolicitado = Signal(list, object)  # ids, Status
     selecaoAlterada = Signal(list)  # ids
     irPara = Signal(str)  # id
+    menuSolicitado = Signal(list, QPoint)  # ids, posição global
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -140,6 +145,8 @@ class PainelDeteccoes(QWidget):
         self.tabela.setTextElideMode(Qt.ElideRight)
         self.tabela.selectionModel().selectionChanged.connect(self._selecao_mudou)
         self.tabela.doubleClicked.connect(lambda idx: self.irPara.emit(idx.data(Qt.UserRole)))
+        self.tabela.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.tabela.customContextMenuRequested.connect(self._menu)
 
         b_aceitar = QPushButton("Aceitar selecionadas")
         b_rejeitar = QPushButton("Rejeitar selecionadas")
@@ -169,7 +176,8 @@ class PainelDeteccoes(QWidget):
         self.atualizar([])
 
     # ---- dados ----------------------------------------------------------
-    def atualizar(self, deteccoes: list[Deteccao]) -> None:
+    def atualizar(self, deteccoes: list[Deteccao], pessoas: dict[str, str] | None = None) -> None:
+        """``pessoas``: rótulo ([P1]…) de cada nome que será tarjado, por id."""
         selecionados = self.ids_selecionados()
         tipo_atual = self.combo_tipo.currentData()
         self.combo_tipo.blockSignals(True)
@@ -182,7 +190,7 @@ class PainelDeteccoes(QWidget):
         self.filtro.tipo = self.combo_tipo.currentData()
         self.combo_tipo.blockSignals(False)
 
-        self.modelo.definir(deteccoes)
+        self.modelo.definir(deteccoes, pessoas)
         self.selecionar(selecionados, rolar=False)
 
         n = len(deteccoes)
@@ -234,6 +242,11 @@ class PainelDeteccoes(QWidget):
     def _selecao_mudou(self) -> None:
         if not self._sincronizando:
             self.selecaoAlterada.emit(self.ids_selecionados())
+
+    def _menu(self, pos) -> None:
+        ids = self.ids_selecionados()
+        if ids:
+            self.menuSolicitado.emit(ids, self.tabela.viewport().mapToGlobal(pos))
 
     def _emitir(self, ids: list[str], status: Status) -> None:
         if ids:

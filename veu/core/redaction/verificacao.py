@@ -71,10 +71,15 @@ def verificar(
     detectores: Iterable[Detector] | None = None,
     politica=None,
     paginas_ocr: list[int] | None = None,
+    rotulos_extras: Iterable[str] = (),
 ) -> ResultadoVerificacao:
     detectores = list(detectores) if detectores is not None else construir_detectores(politica)
     resultado = ResultadoVerificacao()
-    rotulos = sorted({t.rotulo for t in todos_os_tipos()} | {f"[{d.tipo}]" for d in tarjadas}, key=len, reverse=True)
+    rotulos = sorted(
+        {t.rotulo for t in todos_os_tipos()} | {f"[{d.tipo}]" for d in tarjadas} | set(rotulos_extras),
+        key=len,
+        reverse=True,
+    )
 
     # Páginas escaneadas: o texto só existe na imagem, então o PDF gerado
     # passa por OCR de novo para provar que a tarja apagou os pixels.
