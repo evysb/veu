@@ -56,6 +56,7 @@ class DialogoConfirmacao(QDialog):
         self.estilo = QComboBox()
         self.estilo.addItem("Retângulo preto liso", EstiloTarja.PRETA)
         self.estilo.addItem("Retângulo com o tipo do dado ([CPF], [E-MAIL]…)", EstiloTarja.ROTULO)
+        self.estilo.addItem("Tipo do dado, com cada pessoa numerada ([P1], [P2]…)", EstiloTarja.PESSOAS)
         self.vetores = QComboBox()
         self.vetores.addItem("Remover desenhos totalmente cobertos pela tarja", Vetores.COBERTOS)
         self.vetores.addItem("Remover qualquer desenho que toque a tarja (pode apagar linhas de tabelas)", Vetores.TOCADOS)
@@ -114,6 +115,8 @@ class DialogoResultado(QDialog):
 
         html = [f"<h3>PDF anonimizado salvo</h3><p><code>{escape(os.path.normpath(resultado.caminho_saida))}</code></p>"]
         html.append(f"<p><b>{resultado.total_tarjas}</b> tarja(s) aplicada(s):</p>{_tabela_contagem(resultado.tarjas_por_tipo)}")
+        if resultado.pessoas:
+            html.append(f"<p>Nomes substituídos por rótulos de <b>{resultado.pessoas}</b> pessoa(s) ([P1], [P2]…).</p>")
         if resultado.limpeza:
             html.append("<p><b>Limpeza do documento:</b></p><ul>" + "".join(f"<li>{x}</li>" for x in resultado.limpeza) + "</ul>")
 

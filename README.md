@@ -78,14 +78,40 @@ Veu.exe                                       # packaged version
    - navigate with **PgUp/PgDown**; zoom with **Ctrl + mouse wheel**,
      **Ctrl+/Ctrl−** and **Ctrl+0** (fit to width).
 4. **Anonymize:** *Anonimizar e salvar…* (Anonymize and save, Ctrl+S). Choose
-   the redaction style (plain black or labeled, such as `[CPF]`, `[NOME]`,
-   `[SAÚDE]`) and confirm that you reviewed the document.
+   the redaction style (plain black; labeled, such as `[CPF]`, `[NOME]`,
+   `[SAÚDE]`; or labeled with numbered people, see below) and confirm that you
+   reviewed the document.
 5. **Save:** the default is `file_anonimizado.pdf` in the same folder. **The
    original is never overwritten.**
 
 When done, Véu **reopens the generated PDF**, confirms that nothing redacted
 can be extracted, and runs the detectors again to flag any data left
 unredacted.
+
+### Numbered people (`[P1]`, `[P2]`…)
+
+With the *Tipo do dado, com cada pessoa numerada* style, every occurrence of
+the same person gets the same label, so the text stays readable
+(“[P1] reports that [P2]…”) without revealing who is who. Other data keeps its
+type label (`[CPF]`, `[SAÚDE]`…).
+
+- Name variants are grouped automatically, ignoring accents, case, titles
+  (“Sr.”, “Dra.”) and connectors (“da”, “dos”): “Maria Aparecida Souza”,
+  “Sra. Souza” and “MARIA APARECIDA DE SOUZA” all become `[P1]`. A partial name
+  that could belong to more than one person (“Maria” with “Maria Souza” and
+  “Maria Lima”) gets its own label.
+- Numbers follow the order of first appearance and count only names that will
+  be redacted. The *Pessoa* column in the side list shows each label.
+- Right-click one or more names (on the page or in the list) to:
+  **Renomear pessoa…** (rename, e.g. `[PACIENTE]`, applied to every occurrence;
+  labels containing part of the person's name are refused),
+  **Juntar como a mesma pessoa** (merge) or **Separar como outra pessoa**
+  (split).
+- The link between labels and names exists only in memory during review. It is
+  never written to the PDF, the audit receipt or anywhere else.
+
+Names marked with *Buscar termo → Marcar todas* or listed under
+*Sempre tarjar* are of type “Termo marcado” and keep the `[TARJA]` label.
 
 ### What anonymization does
 
@@ -200,7 +226,8 @@ On every anonymization, Véu writes a **receipt** to
 - number of pages, including how many went through OCR;
 - number of redactions per type;
 - how many marks were added and how many were rejected manually;
-- redaction style;
+- redaction style and, for numbered people, how many people were labeled
+  (never who);
 - verification result;
 - program and policy version.
 
@@ -220,6 +247,7 @@ anonimizar laudo.pdf                                   # analyze only and list f
 anonimizar laudo.pdf --sem-revisao                     # writes laudo_anonimizado.pdf
 anonimizar laudos\ --pasta-saida anonimizados --sem-revisao --politica politica.yaml
 anonimizar entrada.pdf --saida saida.pdf --sem-revisao --estilo rotulo
+anonimizar entrada.pdf --sem-revisao --estilo pessoas  # names become [P1], [P2]…
 anonimizar --historico-csv historico.csv
 anonimizar --help
 ```

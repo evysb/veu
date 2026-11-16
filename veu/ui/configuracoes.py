@@ -219,6 +219,7 @@ class DialogoConfiguracoes(QDialog):
         self.combo_estilo = QComboBox()
         self.combo_estilo.addItem("Retângulo preto liso", EstiloTarja.PRETA)
         self.combo_estilo.addItem("Retângulo com o tipo do dado ([CPF], [NOME]…)", EstiloTarja.ROTULO)
+        self.combo_estilo.addItem("Tipo do dado, com cada pessoa numerada ([P1], [P2]…)", EstiloTarja.PESSOAS)
         self.combo_vetores = QComboBox()
         self.combo_vetores.addItem("Remover desenhos totalmente cobertos pela tarja", Vetores.COBERTOS)
         self.combo_vetores.addItem("Remover qualquer desenho que toque a tarja (pode apagar linhas de tabelas)", Vetores.TOCADOS)

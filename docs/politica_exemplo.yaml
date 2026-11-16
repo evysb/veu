@@ -81,5 +81,5 @@ excecoes:
 - Hospital Fictício Maria Helena
 - Clínica Exemplo Ltda
 tarja:
-  estilo: preta
+  estilo: preta  # preta | rotulo ([CPF], [NOME]…) | pessoas ([CPF], [P1], [P2]…)
   vetores: cobertos

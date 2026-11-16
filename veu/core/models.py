@@ -25,6 +25,7 @@ class Status(str, Enum):
 class EstiloTarja(str, Enum):
     PRETA = "preta"
     ROTULO = "rotulo"
+    PESSOAS = "pessoas"  # como ROTULO, mas cada pessoa vira [P1], [P2]…
 
 
 class Vetores(str, Enum):

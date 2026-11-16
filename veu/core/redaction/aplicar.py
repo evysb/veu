@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import os
 from collections import Counter
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import Callable
 
@@ -23,6 +23,9 @@ class OpcoesAnonimizacao:
     vetores: Vetores = Vetores.COBERTOS
     limpar_documento: bool = True
     verificar: bool = True
+    #: Estilo PESSOAS: rótulo de cada detecção de nome (id → "[P1]"). Vazio =
+    #: agrupamento automático (ex.: na linha de comando, sem revisão).
+    rotulos_por_id: dict[str, str] = field(default_factory=dict)
 
 
 @dataclass
@@ -33,6 +36,7 @@ class ResultadoAnonimizacao:
     verificacao: ResultadoVerificacao | None = None
     estilo: str = ""
     recibo_registrado: bool = False
+    pessoas: int = 0  # estilo PESSOAS: quantas pessoas distintas foram rotuladas
 
     @property
     def total_tarjas(self) -> int:
@@ -107,11 +111,13 @@ def aplicar_tarjas(
             page = doc[num]
             for d in dets:
                 rotulo = obter_tipo(d.tipo).rotulo
+                if opcoes.estilo == EstiloTarja.PESSOAS:
+                    rotulo = opcoes.rotulos_por_id.get(d.id, rotulo)
                 for rect in d.rects:
                     r = _para_coordenadas_pdf(page, rect)
                     if r.is_empty:
                         continue
-                    if opcoes.estilo == EstiloTarja.ROTULO:
+                    if opcoes.estilo in (EstiloTarja.ROTULO, EstiloTarja.PESSOAS):
                         fs = _tamanho_fonte_rotulo(rotulo, r)
                         page.add_redact_annot(
                             r,
@@ -157,11 +163,22 @@ def anonimizar(
     opcoes = opcoes or OpcoesAnonimizacao()
     tarjar = [d for d in analise.deteccoes if d.status == Status.ACEITA]
     rejeitadas = [d for d in analise.deteccoes if d.status == Status.REJEITADA]
+    rotulos_extras: set[str] = set()
+    if opcoes.estilo == EstiloTarja.PESSOAS:
+        if not opcoes.rotulos_por_id:
+            from veu.core.revisao import Revisao  # agrupamento automático
+
+            opcoes = replace(opcoes, rotulos_por_id=Revisao(analise).rotulo_por_id())
+        rotulos_extras = set(opcoes.rotulos_por_id.values())
     contagem, limpeza = aplicar_tarjas(analise.caminho, saida, tarjar, opcoes, analise.senha, progresso)
     resultado = ResultadoAnonimizacao(saida, contagem, limpeza, estilo=EstiloTarja(opcoes.estilo).value)
+    ids_tarjados = {d.id for d in tarjar}
+    resultado.pessoas = len({r for i, r in opcoes.rotulos_por_id.items() if i in ids_tarjados})
     if opcoes.verificar:
         if progresso:
             progresso(1, 1, "Verificando o PDF gerado…")
         paginas_ocr = [p.numero for p in analise.paginas if p.origem == "ocr"]
-        resultado.verificacao = verificar(saida, tarjar, rejeitadas, politica=analise.politica, paginas_ocr=paginas_ocr)
+        resultado.verificacao = verificar(
+            saida, tarjar, rejeitadas, politica=analise.politica, paginas_ocr=paginas_ocr, rotulos_extras=rotulos_extras
+        )
     return resultado

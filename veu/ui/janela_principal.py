@@ -31,7 +31,8 @@ from PySide6.QtWidgets import (
 
 from veu import __version__
 from veu.core.extraction import SenhaIncorreta, SenhaNecessaria, abrir_documento
-from veu.core.models import Analise, Origem, Status
+from veu.core.models import Analise, EstiloTarja, Origem, Status
+from veu.core.pessoas import RotuloInvalido
 from veu.core.audit import criar_recibo, registrar
 from veu.core.pipeline import analisar
 from veu.core.policy import politica_ativa
@@ -210,6 +211,7 @@ class JanelaPrincipal(QMainWindow):
         self.painel.statusSolicitado.connect(self.definir_status)
         self.painel.selecaoAlterada.connect(self._selecao_na_lista)
         self.painel.irPara.connect(self.ir_para_deteccao)
+        self.painel.menuSolicitado.connect(self._menu_caixa)
         dock = QDockWidget("Detecções", self)
         dock.setWidget(self.painel)
         dock.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable)
@@ -435,7 +437,7 @@ class JanelaPrincipal(QMainWindow):
     def _atualizar_tudo(self, manter_rolagem: bool = False) -> None:
         self._renderizar(manter_rolagem)
         if self.revisao:
-            self.painel.atualizar(self.revisao.deteccoes)
+            self.painel.atualizar(self.revisao.deteccoes, self.revisao.rotulo_por_id())
             self.painel.selecionar(self._selecao, rolar=False)
         self._atualizar_estado()
 
@@ -544,7 +546,52 @@ class JanelaPrincipal(QMainWindow):
             trecho = dets[0].trecho
             menu.addSeparator()
             menu.addAction(f"Marcar todas as ocorrências de “{trecho[:30]}”", lambda: self.marcar_termo(trecho))
+        self._menu_pessoas(menu, ids)
         menu.exec(pos)
+
+    def _menu_pessoas(self, menu: QMenu, ids: list[str]) -> None:
+        """Renomear, juntar e separar pessoas (estilo de tarja [P1], [P2]…)."""
+        grupos = {self.revisao.grupo_de(i) for i in ids}
+        if not ids or None in grupos:
+            return  # só quando todas as selecionadas são nomes
+        rotulos = self.revisao.rotulos_pessoas()
+        menu.addSeparator()
+        if len(grupos) == 1:
+            grupo = next(iter(grupos))
+            atual = rotulos.get(grupo, "")
+            menu.addAction(f"Renomear pessoa {atual}…" if atual else "Renomear pessoa…", lambda: self.renomear_pessoa(grupo))
+            total = sum(1 for g in self.revisao.grupo_por_id.values() if g == grupo)
+            if len(ids) < total:
+                menu.addAction("Separar como outra pessoa", lambda: self._alterar_pessoas(self.revisao.separar_pessoa, ids))
+        else:
+            menu.addAction("Juntar como a mesma pessoa", lambda: self._alterar_pessoas(self.revisao.juntar_pessoas, ids))
+
+    def _alterar_pessoas(self, acao, ids: list[str]) -> None:
+        acao(ids)
+        self.alterado = True
+        self._atualizar_tudo(manter_rolagem=True)
+
+    def renomear_pessoa(self, grupo: str) -> None:
+        atual = self.revisao.rotulos_pessoas().get(grupo, "")
+        texto, ok = QInputDialog.getText(
+            self,
+            "Renomear pessoa",
+            "Rótulo usado no lugar de todas as ocorrências desta pessoa\n"
+            "(ex.: PACIENTE, MÉDICO ASSISTENTE). Deixe vazio para voltar à numeração automática.",
+            QLineEdit.Normal,
+            atual.strip("[]"),
+        )
+        if not ok:
+            return
+        try:
+            novo = self.revisao.renomear_pessoa(grupo, texto)
+        except RotuloInvalido as e:
+            QMessageBox.warning(self, "Rótulo inválido", str(e))
+            return
+        self.alterado = True
+        self._atualizar_tudo(manter_rolagem=True)
+        if novo:
+            self.statusBar().showMessage(f"Esta pessoa será tarjada como {novo}.", 4000)
 
     def marcar_termo(self, termo: str | None = None) -> None:
         if not self.revisao:
@@ -604,6 +651,8 @@ class JanelaPrincipal(QMainWindow):
         if dlg.exec() != DialogoConfirmacao.Accepted:
             return
         opcoes = dlg.opcoes()
+        if opcoes.estilo == EstiloTarja.PESSOAS:
+            opcoes.rotulos_por_id = self.revisao.rotulo_por_id()
 
         sugestao = caminho_saida_padrao(self.analise.caminho)
         saida, _ = QFileDialog.getSaveFileName(self, "Salvar PDF anonimizado", sugestao, "Documentos PDF (*.pdf)")
