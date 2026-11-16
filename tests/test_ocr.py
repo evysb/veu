@@ -52,7 +52,8 @@ def test_pagina_mista_ocr_so_nas_imagens(pdfs):
 def test_prontuario_escaneado_ponta_a_ponta(pdfs, tmp_path):
     a = analisar(str(pdfs["prontuario_escaneado"]))
     tipos = {d.tipo for d in a.deteccoes}
-    assert {"NOME", "CPF", "RG", "CNS", "ENDERECO", "TELEFONE", "SAUDE", "CNPJ", "CRM"} <= tipos
+    assert {"NOME", "CPF", "RG", "CNS", "ENDERECO", "TELEFONE", "CNPJ", "CRM"} <= tipos
+    assert "SAUDE" not in tipos  # desligado na política padrão
     Revisao(a).aceitar_pendentes()
     saida = tmp_path / "escaneado_anonimizado.pdf"
     r = anonimizar(a, str(saida))
@@ -63,8 +64,9 @@ def test_prontuario_escaneado_ponta_a_ponta(pdfs, tmp_path):
     # Prova independente: OCR do resultado não encontra os valores tarjados.
     page = pymupdf.open(saida)[0]
     texto = page.get_text(textpage=textpage_ocr(page, pasta_tessdata(), ModoOCR.PAGINA_INTEIRA))
-    for valor in ["529.982.247-25", "Maria Fictícia", "Acácias", "metformina", "11.222.333", "98765-4321"]:
+    for valor in ["529.982.247-25", "Maria Fictícia", "Acácias", "11.222.333", "98765-4321"]:
         assert valor not in texto, valor
+    assert "metformina" in texto  # dado de saúde fica (desligado por padrão)
     assert "HISTÓRIA CLÍNICA" in texto  # o resto da página continua legível
 
 

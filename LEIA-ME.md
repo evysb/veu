@@ -138,10 +138,15 @@ são do tipo “Termo marcado” e continuam com o rótulo `[TARJA]`.
 | **E-mail** | formato de endereço de e-mail |
 | **Data de nascimento** | datas perto de “nascimento”, “DN”, “nascido em”… |
 | **Placa de veículo** | modelo antigo e Mercosul |
-| **Dado de saúde** | CID-10 (após “CID” ou com contexto clínico), doenças e condições sensíveis, medicamentos |
+| **Dado de saúde** (desligado por padrão) | CID-10 (após “CID” ou com contexto clínico), doenças e condições sensíveis, medicamentos |
 | **Registro profissional** | CRM, CRO, COREN, CRP, CRF… |
 | **Dados bancários** | agência e conta perto das palavras-chave |
 | **Chave Pix** | chave aleatória (UUID) ou valor após “chave Pix” |
+
+**Dados de saúde vêm desligados por padrão**: eles continuam no PDF
+anonimizado. Para tarjá-los, ative o tipo em *Configurações… → Tipos de dado* ou
+no arquivo de política (`SAUDE: ativo: true`). Uma política que já o lista como
+ativo continua valendo.
 
 **Termos clínicos genéricos** (“laudo”, “exame”, “diagnóstico”, “prontuário”)
 **não são tarjados sozinhos**: eles só aumentam a confiança das detecções de

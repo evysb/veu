@@ -43,6 +43,16 @@ def test_padrao_tem_todos_os_tipos():
     assert p.tipo_ativo("CPF") and p.confianca_minima("NOME") == 0.5
 
 
+def test_saude_desligado_por_padrao():
+    p = Politica()
+    assert not p.tipo_ativo("SAUDE") and p.tipo_ativo("CRM")
+    # Arquivo sem esses tipos também fica com o padrão; quem lista ativa explicitamente.
+    from veu.core.policy.modelo import politica_de_dict
+
+    assert not politica_de_dict({"tipos": {"CPF": {"ativo": True}}}).tipo_ativo("SAUDE")
+    assert politica_de_dict({"tipos": {"SAUDE": {"ativo": True}}}).tipo_ativo("SAUDE")
+
+
 def test_ida_e_volta_yaml_e_json(tmp_path):
     p = Politica(
         nome="Hospital Exemplo",

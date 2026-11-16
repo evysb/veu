@@ -93,8 +93,13 @@ class ConfigAuditoria(BaseModel):
     registrar_nome_arquivo: bool = False
 
 
+#: Tipos que existem, mas ficam desligados na política padrão: dados de saúde
+#: não precisam ser removidos por padrão.
+DESATIVADOS_POR_PADRAO = frozenset({"SAUDE"})
+
+
 def _tipos_padrao() -> dict[str, ConfigTipo]:
-    return {t.id: ConfigTipo() for t in tipos_detectaveis()}
+    return {t.id: ConfigTipo(ativo=t.id not in DESATIVADOS_POR_PADRAO) for t in tipos_detectaveis()}
 
 
 class Politica(BaseModel):
@@ -139,8 +144,9 @@ class Politica(BaseModel):
         desconhecidos = set(self.tipos) - conhecidos - set(ids_pers)
         if desconhecidos:
             raise ValueError(f"tipo(s) desconhecido(s) em 'tipos': {', '.join(sorted(desconhecidos))}")
-        for id_ in conhecidos - set(self.tipos):  # tipos novos em versões futuras
-            self.tipos[id_] = ConfigTipo()
+        padrao = _tipos_padrao()
+        for id_ in conhecidos - set(self.tipos):  # tipos ausentes do arquivo: valor padrão
+            self.tipos[id_] = padrao[id_]
         return self
 
     # ---- consultas ------------------------------------------------------

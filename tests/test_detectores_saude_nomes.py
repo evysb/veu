@@ -80,3 +80,9 @@ def test_nome_nao_atravessa_linha_para_outro_campo():
     texto = "Paciente: Maria Fictícia\nRelatório de alta"
     a = achados(DetectorNome(usar_ner=False), texto)
     assert "Maria Fictícia" in a
+
+
+def test_registro_profissional_com_uf_nao_e_nome(nomes):
+    a = achados(nomes, "Encaminhada pela Dra. Fernanda Lima Costa, CRM-SP 123456.")
+    assert "Fernanda Lima Costa" in a
+    assert not any("CRM" in trecho for trecho in a), a

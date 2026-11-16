@@ -173,10 +173,13 @@ def test_processamento_nao_usa_rede(pdfs, tmp_path, monkeypatch):
 
 
 def test_prontuario_completo_nada_recuperavel(pdfs, tmp_path):
-    """Todos os tipos da etapa 2: nada do que foi tarjado pode ser extraído."""
+    """Todos os tipos (inclusive saúde, desligado por padrão): nada do que foi tarjado pode ser extraído."""
     from tests.fixtures import dados as D
+    from veu.core.policy import politica_padrao
 
-    a = analisar(str(pdfs["prontuario"]))
+    politica = politica_padrao()
+    politica.tipos["SAUDE"].ativo = True
+    a = analisar(str(pdfs["prontuario"]), politica=politica)
     tipos = {d.tipo for d in a.deteccoes}
     esperados = {
         "NOME", "CPF", "RG", "DATA_NASCIMENTO", "CNS", "PIS", "TITULO_ELEITOR", "CNH", "PASSAPORTE",
@@ -198,3 +201,18 @@ def test_prontuario_completo_nada_recuperavel(pdfs, tmp_path):
         assert valor not in texto, valor
     # Contexto neutro preservado
     assert "HISTÓRIA CLÍNICA" in texto and "laudo do exame" in texto
+
+
+def test_saude_fica_no_pdf_por_padrao(pdfs, tmp_path):
+    a = analisar(str(pdfs["prontuario"]))
+    tipos = {d.tipo for d in a.deteccoes}
+    assert "SAUDE" not in tipos and "CRM" in tipos
+    Revisao(a).aceitar_pendentes()
+    saida = str(tmp_path / "prontuario_anonimizado.pdf")
+    r = anonimizar(a, saida)
+    assert r.verificacao.ok and r.verificacao.residuais_novos == []
+    texto = pymupdf.open(saida)[0].get_text()
+    for valor in ("metformina", "O24.4", "HIV"):
+        assert valor in texto, valor
+    for valor in ("529.982.247-25", "Carlos Eduardo Souza", "123456"):
+        assert valor not in texto, valor

@@ -144,10 +144,14 @@ Names marked with *Buscar termo → Marcar todas* or listed under
 | **E-mail** | e-mail address format |
 | **Date of birth** | dates near “nascimento”, “DN”, “nascido em”… |
 | **License plate** | old format and Mercosul |
-| **Health data** | ICD-10 codes (after “CID” or with clinical context), sensitive diseases and conditions, medications |
+| **Health data** (off by default) | ICD-10 codes (after “CID” or with clinical context), sensitive diseases and conditions, medications |
 | **Professional registration** | CRM, CRO, COREN, CRP, CRF… |
 | **Bank details** | branch and account near keywords |
 | **Pix key** | random key (UUID) or value after “chave Pix” |
+
+**Health data is off by default**: it stays in the anonymized PDF. To redact
+it, enable the type under *Configurações… → Tipos de dado* or in the policy file
+(`SAUDE: ativo: true`). A policy file that lists it as active keeps it active.
 
 **Generic clinical terms** (“laudo”, “exame”, “diagnóstico”, “prontuário” —
 report, exam, diagnosis, medical record) **are not redacted on their own**: they

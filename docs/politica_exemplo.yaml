@@ -48,7 +48,7 @@ tipos:
     ativo: false
     confianca_minima: 0.5
   SAUDE:
-    ativo: true
+    ativo: false
     confianca_minima: 0.5
   CRM:
     ativo: true
