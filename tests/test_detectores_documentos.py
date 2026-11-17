@@ -68,7 +68,7 @@ def test_cns():
     formatado = f"{c[:3]} {c[3:7]} {c[7:11]} {c[11:]}"
     assert trechos(DetectorCNS(), f"Cartão SUS: {formatado}") == [formatado]
     assert trechos(DetectorCNS(), f"CNS {c}") == [c]
-    assert trechos(DetectorCNS(), f"CNS {c[:-1]}{(int(c[-1]) + 1) % 10}") == []
+    assert trechos(DetectorCNS(), f"número {c[:-1]}{(int(c[-1]) + 1) % 10}") == []  # inválido e sem rótulo
     assert trechos(DetectorCNS(), "CNS 300000000000000") == []  # não começa com 1, 2, 7, 8, 9
 
 
@@ -125,3 +125,42 @@ def test_passaporte():
     assert trechos(DetectorPassaporte(), "Passaporte: FZ123456") == ["FZ123456"]
     assert trechos(DetectorPassaporte(), "passport no. YB987654") == ["YB987654"]
     assert trechos(DetectorPassaporte(), "lote FZ123456") == []
+
+
+@pytest.mark.parametrize(
+    "texto, esperado",
+    [
+        ("Prontuário: 458.921", "458.921"),
+        ("PRONTUÁRIO Nº 2026/001234", "2026/001234"),
+        ("Nº do prontuário: HC-123456", "HC-123456"),
+        ("Registro hospitalar 00987654", "00987654"),
+        ("Pront. 12345-6", "12345-6"),
+    ],
+)
+def test_prontuario(texto, esperado):
+    from veu.core.detectors import DetectorProntuario
+
+    assert [texto[a.inicio:a.fim] for a in DetectorProntuario().detectar(texto)] == [esperado]
+
+
+@pytest.mark.parametrize(
+    "texto",
+    [
+        "PRONTUÁRIO (DADOS FICTÍCIOS)",
+        "Prontuário: 12",  # curto demais
+        "Prontuário em 2026/0001 revisado",  # minúsculas antes do número não são prefixo
+        "Leito 458.921",  # número sem o rótulo
+    ],
+)
+def test_prontuario_negativos(texto):
+    from veu.core.detectors import DetectorProntuario
+
+    assert DetectorProntuario().detectar(texto) == []
+
+
+def test_cns_fora_da_validacao_so_com_rotulo():
+    from veu.core.detectors import DetectorCNS
+
+    rotulado = DetectorCNS().detectar("Cartão SUS: 700 0000 0000 0000")
+    assert [a.confianca for a in rotulado] == [0.8]
+    assert DetectorCNS().detectar("Lote 700 0000 0000 0000") == []

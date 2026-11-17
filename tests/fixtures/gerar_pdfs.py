@@ -53,7 +53,7 @@ def pdf_texto_nativo(destino: Path) -> Path:
             "Paciente: Maria Fictícia da Silva",
             f"CPF: {mascarar_cpf(CPF_1)}",
             f"CPF do responsável (sem máscara): {CPF_2}",
-            f"Número de protocolo inválido como CPF: {CPF_INVALIDO}",
+            f"Número de protocolo: {CPF_INVALIDO}",  # formato de CPF, DV inválido, sem o rótulo CPF
             f"E-mail: {EMAIL_1}",
             f"Contato: {TEL_1} ou {TEL_2}",
             f"Celular alternativo: {TEL_3}",

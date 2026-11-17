@@ -39,6 +39,10 @@ class DetectorTelefone(Detector):
             if ddd_txt:
                 ddd = int(re.sub(r"\D", "", ddd_txt)[-2:])
                 if ddd not in DDDS_VALIDOS:
+                    # DDD inexistente (erro, número fictício): só no formato
+                    # inequívoco "(00) 90000-1234", com parênteses e hífen.
+                    if "(" in ddd_txt and m.group("sep") == "-":
+                        achados.append(self._achado(m.start(), m.end(), 0.75))
                     continue
             contexto = tem_palavra_chave(contexto_antes(texto, m.start(), 25), _PALAVRAS_CHAVE)
             tem_sep = bool(m.group("sep"))

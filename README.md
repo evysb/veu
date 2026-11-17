@@ -12,7 +12,7 @@ Portuguese. A Portuguese version of this document is available in
 
 Features:
 
-- 18 data types detected, with person names recognized by a language model that
+- 23 data types detected, with person names recognized by a language model that
   runs locally;
 - **local OCR** for scanned PDFs;
 - IT-configurable policy;
@@ -130,19 +130,24 @@ Names marked with *Buscar termo → Marcar todas* or listed under
 
 | Type | How it is detected |
 |---|---|
-| **CPF** (individual taxpayer ID) | with and without mask (including when split across lines), check digits validated |
+| **CPF** (individual taxpayer ID) | with and without mask (including when split across lines), check digits validated; right after the “CPF” label, a masked number with wrong check digits is also marked (lower confidence) |
 | **CNPJ** (company taxpayer ID) | numeric and **alphanumeric** (new Receita Federal format), check digits validated |
 | **RG** (state ID card) | various formats, only near “RG”, “Identidade”, “SSP”… or the issuing agency |
 | **CNH** (driver's license) | 11 digits validated, near “CNH”/“habilitação” |
 | **Título de eleitor** (voter ID) | check digits and state code validated |
 | **PIS/PASEP/NIS** (social security number) | check digit validated |
-| **Cartão SUS (CNS)** (public health card) | 15 digits, official validation (permanent and provisional) |
+| **Cartão SUS (CNS)** (public health card) | 15 digits, official validation (permanent and provisional); right after “Cartão SUS”/“CNS”, also numbers that fail validation |
 | **Passport** | near “passaporte” |
+| **Health plan and card** | plan name after “Convênio:”/“Plano de saúde:” and card number after “carteirinha”, “carteira do convênio”… (“particular”, “SUS” and blanks are left visible) |
+| **Medical record number** | number right after “Prontuário”, “Nº do prontuário”, “Registro hospitalar”… (any format) |
 | **Person name** | local language model (spaCy) + first-name and surname lists + context (“Sr.”, “paciente”, “nome:”, “assinado por”…) |
 | **Address/CEP** (postal code) | street, number, unit, neighborhood, city/state and CEP; also text after “Endereço:” and “residente na” |
-| **Phone** | landline and mobile, with or without area code (validated) and +55 |
+| **City** | by context (“Cidade:”, “Naturalidade:”, “natural de”, “centro de”, “X/SP”, end of the address line); once recognized, every other capitalized occurrence of the same name in the document is also marked |
+| **Institution/place** | hospital, clinic, maternity ward, school, company, bakery… followed by a proper name (“Hospital Santa Aurora”, “Colégio Monte Azul”); generic names such as “Clínica Médica” or “Escola Estadual” stay visible |
+| **Phone** | landline and mobile, with or without area code (validated) and +55; an invalid area code only in the full format “(00) 90000-1234” |
 | **E-mail** | e-mail address format |
 | **Date of birth** | dates near “nascimento”, “DN”, “nascido em”… |
+| **Occupation** | value after “Profissão:”, “Ocupação:”, “Cargo:” in forms (occupations mentioned in free text are not detected) |
 | **License plate** | old format and Mercosul |
 | **Health data** (off by default) | ICD-10 codes (after “CID” or with clinical context), sensitive diseases and conditions, medications |
 | **Professional registration** | CRM, CRO, COREN, CRP, CRF… |
@@ -316,8 +321,12 @@ into a folder for manual testing:
   why **human review is required**.
 - **Names:** a first name alone (“Rosa”, “Glória”) is only marked with a
   trigger nearby (“Sra. Rosa”, “Paciente: Rosa”). Place and institution names
-  derived from person names (“Hospital São Lucas”, “Rua João Pessoa”) are
-  ignored on purpose.
+  derived from person names (“Hospital São Lucas”, “Rua João Pessoa”) are not
+  marked as people; they are marked as an institution or address instead.
+- **Cities** are recognized only by context (there is no list of
+  municipalities). A city mentioned without any context, and never elsewhere
+  in the document with context, is not detected. To keep your own hospital or
+  city visible, add it to **Exceções**.
 - **Health:** the dictionary covers the most common diseases and medications,
   but is not exhaustive. Ambiguous acronyms (AVC, AAS) are only marked with
   clinical context nearby.

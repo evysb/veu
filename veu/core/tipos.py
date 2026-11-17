@@ -55,13 +55,18 @@ TITULO = _r(TipoDado("TITULO_ELEITOR", "Título de eleitor", "[TÍTULO]", "#1565
 PIS = _r(TipoDado("PIS", "PIS/PASEP/NIS", "[PIS/NIS]", "#5D6D7E", "Documentos", "Dígito verificador validado."))
 CNS = _r(TipoDado("CNS", "Cartão SUS (CNS)", "[CNS]", "#00897B", "Documentos", "15 dígitos, validação oficial."))
 PASSAPORTE = _r(TipoDado("PASSAPORTE", "Passaporte", "[PASSAPORTE]", "#283593", "Documentos", "Perto de “passaporte”."))
+CONVENIO = _r(TipoDado("CONVENIO", "Convênio e carteirinha", "[CONVÊNIO]", "#4E342E", "Documentos", "Nome do plano após “Convênio:” e número após “carteirinha”…"))
+PRONTUARIO = _r(TipoDado("PRONTUARIO", "Número de prontuário", "[PRONTUÁRIO]", "#6A1B9A", "Documentos", "Número logo após “Prontuário”, “Registro hospitalar”…"))
 # Pessoa e contato
 NOME = _r(TipoDado("NOME", "Nome de pessoa", "[NOME]", "#8E44AD", "Pessoa e contato", "NER local + listas de nomes + contexto."))
 ENDERECO = _r(TipoDado("ENDERECO", "Endereço/CEP", "[ENDEREÇO]", "#2E7D32", "Pessoa e contato", "Logradouro, número, complemento, bairro, cidade/UF e CEP."))
 TELEFONE = _r(TipoDado("TELEFONE", "Telefone", "[TELEFONE]", "#E09F3E", "Pessoa e contato", "Fixo e celular, com ou sem DDD/+55."))
+CIDADE = _r(TipoDado("CIDADE", "Cidade", "[CIDADE]", "#33691E", "Pessoa e contato", "Pelo contexto (“Cidade:”, “natural de”, “X/SP”, fim do endereço) e todas as outras ocorrências do mesmo nome."))
+INSTITUICAO = _r(TipoDado("INSTITUICAO", "Instituição/local", "[INSTITUIÇÃO]", "#5D4037", "Pessoa e contato", "Hospital, clínica, escola, empresa… seguidos de nome próprio."))
 EMAIL = _r(TipoDado("EMAIL", "E-mail", "[E-MAIL]", "#2E86AB", "Pessoa e contato", "Endereços de e-mail."))
 NASCIMENTO = _r(TipoDado("DATA_NASCIMENTO", "Data de nascimento", "[NASCIMENTO]", "#6D4C41", "Pessoa e contato", "Datas perto de “nascimento”, “DN”…"))
 PLACA = _r(TipoDado("PLACA", "Placa de veículo", "[PLACA]", "#F57C00", "Pessoa e contato", "Modelo antigo e Mercosul."))
+PROFISSAO = _r(TipoDado("PROFISSAO", "Profissão", "[PROFISSÃO]", "#00838F", "Pessoa e contato", "Valor após “Profissão:”, “Ocupação:”, “Cargo:”."))
 # Saúde
 SAUDE = _r(TipoDado("SAUDE", "Dado de saúde", "[SAÚDE]", "#C2185B", "Saúde", "CID-10, doenças, medicamentos e condições sensíveis."))
 CRM = _r(TipoDado("CRM", "Registro profissional (CRM/CRO…)", "[REGISTRO]", "#AD1457", "Saúde", "CRM, CRO, COREN, CRP, CRF…"))

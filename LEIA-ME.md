@@ -7,7 +7,7 @@ enviados para a internet. Não há chamadas de rede, telemetria nem IA na nuvem.
 
 Recursos:
 
-- 18 tipos de dado detectados, com nomes reconhecidos por um modelo de
+- 23 tipos de dado detectados, com nomes reconhecidos por um modelo de
   linguagem que roda localmente;
 - **OCR local** para PDFs escaneados;
 - política configurável pelo TI;
@@ -124,19 +124,24 @@ são do tipo “Termo marcado” e continuam com o rótulo `[TARJA]`.
 
 | Tipo | Como detecta |
 |---|---|
-| **CPF** | com e sem máscara (também quebrado entre linhas), dígitos verificadores validados |
+| **CPF** | com e sem máscara (também quebrado entre linhas), dígitos verificadores validados; logo após o rótulo “CPF”, um número com máscara e dígito errado também é marcado (confiança menor) |
 | **CNPJ** | numérico e **alfanumérico** (novo formato da Receita), dígitos verificadores validados |
 | **RG** | formatos variados, só perto de “RG”, “Identidade”, “SSP”… ou do órgão emissor |
 | **CNH** | 11 dígitos validados, perto de “CNH”/“habilitação” |
 | **Título de eleitor** | dígitos verificadores e UF validados |
 | **PIS/PASEP/NIS** | dígito verificador validado |
-| **Cartão SUS (CNS)** | 15 dígitos, validação oficial (definitivo e provisório) |
+| **Cartão SUS (CNS)** | 15 dígitos, validação oficial (definitivo e provisório); logo após “Cartão SUS”/“CNS”, também números fora da validação |
 | **Passaporte** | perto de “passaporte” |
+| **Convênio e carteirinha** | nome do plano após “Convênio:”/“Plano de saúde:” e número após “carteirinha”, “carteira do convênio”… (“particular”, “SUS” e campos em branco ficam visíveis) |
+| **Número de prontuário** | número logo após “Prontuário”, “Nº do prontuário”, “Registro hospitalar”… (qualquer formato) |
 | **Nome de pessoa** | modelo de linguagem local (spaCy) + listas de prenomes e sobrenomes + contexto (“Sr.”, “paciente”, “nome:”, “assinado por”…) |
 | **Endereço/CEP** | logradouro, número, complemento, bairro, cidade/UF e CEP; também o texto após “Endereço:” e “residente na” |
-| **Telefone** | fixo e celular, com ou sem DDD (validado) e +55 |
+| **Cidade** | pelo contexto (“Cidade:”, “Naturalidade:”, “natural de”, “centro de”, “X/SP”, fim da linha de endereço); uma vez reconhecida, todas as outras ocorrências do mesmo nome com maiúscula no documento também são marcadas |
+| **Instituição/local** | hospital, clínica, maternidade, escola, empresa, padaria… seguidos de nome próprio (“Hospital Santa Aurora”, “Colégio Monte Azul”); nomes genéricos como “Clínica Médica” ou “Escola Estadual” ficam visíveis |
+| **Telefone** | fixo e celular, com ou sem DDD (validado) e +55; DDD inexistente só no formato completo “(00) 90000-1234” |
 | **E-mail** | formato de endereço de e-mail |
 | **Data de nascimento** | datas perto de “nascimento”, “DN”, “nascido em”… |
+| **Profissão** | valor após “Profissão:”, “Ocupação:”, “Cargo:” em formulários (profissões citadas em texto livre não são detectadas) |
 | **Placa de veículo** | modelo antigo e Mercosul |
 | **Dado de saúde** (desligado por padrão) | CID-10 (após “CID” ou com contexto clínico), doenças e condições sensíveis, medicamentos |
 | **Registro profissional** | CRM, CRO, COREN, CRP, CRF… |
@@ -311,8 +316,12 @@ Para gerá-los numa pasta e testar manualmente:
   **a revisão humana é obrigatória**.
 - **Nomes:** um prenome sozinho (“Rosa”, “Glória”) só é marcado com um gatilho
   por perto (“Sra. Rosa”, “Paciente: Rosa”). Nomes de lugares e instituições
-  derivados de nomes de pessoas (“Hospital São Lucas”, “Rua João Pessoa”) são
-  ignorados de propósito.
+  derivados de nomes de pessoas (“Hospital São Lucas”, “Rua João Pessoa”) não
+  são marcados como pessoa; eles são marcados como instituição ou endereço.
+- **Cidades** são reconhecidas só pelo contexto (não há lista de municípios).
+  Uma cidade citada sem contexto, e que não aparece com contexto em outro ponto
+  do documento, não é detectada. Para manter visível o seu hospital ou a sua
+  cidade, inclua o nome em **Exceções**.
 - **Saúde:** o dicionário cobre as doenças e os medicamentos mais comuns, mas
   não é exaustivo. Siglas ambíguas (AVC, AAS) só são marcadas com contexto
   clínico por perto.

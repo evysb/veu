@@ -28,7 +28,8 @@ def test_detecta(texto, esperado):
 @pytest.mark.parametrize(
     "texto",
     [
-        "(20) 98765-4321",  # DDD inexistente
+        "20 98765-4321",  # DDD inexistente, sem parênteses
+        "(20) 987654321",  # DDD inexistente, sem hífen
         "valor 1.234,56",
         "lote 12345678",  # 8 dígitos soltos
         "ano 2024",
@@ -39,3 +40,8 @@ def test_detecta(texto, esperado):
 )
 def test_nao_detecta(texto):
     assert trechos(texto) == []
+
+
+def test_ddd_inexistente_no_formato_completo():
+    achados = DetectorTelefone().detectar("Contato: (00) 90000-1234")
+    assert [a.confianca for a in achados] == [0.75]

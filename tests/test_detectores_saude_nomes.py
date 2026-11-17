@@ -86,3 +86,25 @@ def test_registro_profissional_com_uf_nao_e_nome(nomes):
     a = achados(nomes, "Encaminhada pela Dra. Fernanda Lima Costa, CRM-SP 123456.")
     assert "Fernanda Lima Costa" in a
     assert not any("CRM" in trecho for trecho in a), a
+
+
+def test_parentesco_e_gatilho_para_prenome(nomes):
+    a = achados(nomes, "A filha Juliana, em visita, informou que o pai está melhor.")
+    assert a.get("Juliana", 0) >= 0.5, a
+
+
+@pytest.mark.parametrize(
+    "texto, nome",
+    [
+        ("Mora com o marido, Fábio, e os filhos.", "Fábio"),
+        ("os filhos Lucas (15 anos) e Marina (13 anos).", "Marina"),
+    ],
+)
+def test_familia_e_gatilho(nomes, texto, nome):
+    a = achados(nomes, texto)
+    assert a.get(nome, 0) >= 0.5, a
+
+
+@pytest.mark.parametrize("texto", ["Vitamina D (25-OH)\n19 ng/mL", "Vitamina B12\n310 pg/mL", "Ferritina Sérica 22"])
+def test_termos_de_laboratorio_nao_sao_nomes(nomes, texto):
+    assert not achados(nomes, texto), achados(nomes, texto)
