@@ -19,6 +19,7 @@ from veu.core.detectors.documentos import (
 )
 from veu.core.detectors.email import DetectorEmail
 from veu.core.detectors.endereco import DetectorEndereco
+from veu.core.detectors.locais import DetectorCidade, DetectorInstituicao
 from veu.core.detectors.nomes import DetectorNome
 from veu.core.detectors.outros import (
     DetectorContaBancaria,
@@ -49,6 +50,8 @@ FABRICAS: dict[str, Callable[["Politica"], Detector]] = {
     "CONVENIO": lambda p: DetectorConvenio(),
     "NOME": lambda p: DetectorNome(usar_ner=p.usar_ner),
     "ENDERECO": lambda p: DetectorEndereco(),
+    "CIDADE": lambda p: DetectorCidade(),
+    "INSTITUICAO": lambda p: DetectorInstituicao(),
     "TELEFONE": lambda p: DetectorTelefone(),
     "EMAIL": lambda p: DetectorEmail(),
     "DATA_NASCIMENTO": lambda p: DetectorDataNascimento(),
@@ -101,7 +104,9 @@ __all__ = [
     "DetectorEndereco",
     "DetectorNome",
     "DetectorPIS",
+    "DetectorCidade",
     "DetectorConvenio",
+    "DetectorInstituicao",
     "DetectorPassaporte",
     "DetectorProfissao",
     "DetectorProntuario",

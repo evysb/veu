@@ -114,6 +114,8 @@ def test_caixa_manual_e_busca_de_termo(pdfs, tmp_path):
     a = analisar(str(pdfs["texto_nativo"]))
     rev = Revisao(a)
     rev.aceitar_pendentes()
+    # "CLÍNICA EXEMPLO" já é detectada como instituição: rejeita para testar a busca.
+    rev.definir_status([d.id for d in a.deteccoes if d.tipo == "INSTITUICAO"], Status.REJEITADA)
     novas = rev.marcar_termo("clínica exemplo")  # sem acento/caixa: casa "CLÍNICA EXEMPLO"
     assert len(novas) == 1
     pag = a.paginas[0]
