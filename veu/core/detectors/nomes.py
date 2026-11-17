@@ -28,7 +28,7 @@ _TITULOS = {"sr", "sra", "srta", "dr", "dra", "prof", "profa", "dom", "padre", "
 _GATILHOS = (
     "sr.", "sra.", "srta.", "sr", "sra", "dr.", "dra.", "dr", "dra", "paciente", "nome", "nome completo",
     "assinado por", "assinado digitalmente por", "assinatura", "responsavel", "mae", "pai", "genitor",
-    "genitora", "cliente", "requerente", "requerido", "interessado", "interessada", "testemunha",
+    "genitora", "filho", "filha", "irmao", "irma", "neto", "neta", "sobrinho", "sobrinha", "cliente", "requerente", "requerido", "interessado", "interessada", "testemunha",
     "declarante", "acompanhante", "filho de", "filha de", "esposo", "esposa", "conjuge", "medico",
     "medica", "enfermeiro", "enfermeira", "solicitante", "beneficiario", "titular", "portador", "portadora",
     "aluno", "aluna", "servidor", "servidora", "funcionario", "funcionaria", "autor", "autora", "reu", "re",

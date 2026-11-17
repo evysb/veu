@@ -7,7 +7,7 @@ enviados para a internet. Não há chamadas de rede, telemetria nem IA na nuvem.
 
 Recursos:
 
-- 18 tipos de dado detectados, com nomes reconhecidos por um modelo de
+- 19 tipos de dado detectados, com nomes reconhecidos por um modelo de
   linguagem que roda localmente;
 - **OCR local** para PDFs escaneados;
 - política configurável pelo TI;
@@ -124,17 +124,18 @@ são do tipo “Termo marcado” e continuam com o rótulo `[TARJA]`.
 
 | Tipo | Como detecta |
 |---|---|
-| **CPF** | com e sem máscara (também quebrado entre linhas), dígitos verificadores validados |
+| **CPF** | com e sem máscara (também quebrado entre linhas), dígitos verificadores validados; logo após o rótulo “CPF”, um número com máscara e dígito errado também é marcado (confiança menor) |
 | **CNPJ** | numérico e **alfanumérico** (novo formato da Receita), dígitos verificadores validados |
 | **RG** | formatos variados, só perto de “RG”, “Identidade”, “SSP”… ou do órgão emissor |
 | **CNH** | 11 dígitos validados, perto de “CNH”/“habilitação” |
 | **Título de eleitor** | dígitos verificadores e UF validados |
 | **PIS/PASEP/NIS** | dígito verificador validado |
-| **Cartão SUS (CNS)** | 15 dígitos, validação oficial (definitivo e provisório) |
+| **Cartão SUS (CNS)** | 15 dígitos, validação oficial (definitivo e provisório); logo após “Cartão SUS”/“CNS”, também números fora da validação |
 | **Passaporte** | perto de “passaporte” |
+| **Número de prontuário** | número logo após “Prontuário”, “Nº do prontuário”, “Registro hospitalar”… (qualquer formato) |
 | **Nome de pessoa** | modelo de linguagem local (spaCy) + listas de prenomes e sobrenomes + contexto (“Sr.”, “paciente”, “nome:”, “assinado por”…) |
 | **Endereço/CEP** | logradouro, número, complemento, bairro, cidade/UF e CEP; também o texto após “Endereço:” e “residente na” |
-| **Telefone** | fixo e celular, com ou sem DDD (validado) e +55 |
+| **Telefone** | fixo e celular, com ou sem DDD (validado) e +55; DDD inexistente só no formato completo “(00) 90000-1234” |
 | **E-mail** | formato de endereço de e-mail |
 | **Data de nascimento** | datas perto de “nascimento”, “DN”, “nascido em”… |
 | **Placa de veículo** | modelo antigo e Mercosul |

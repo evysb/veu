@@ -86,3 +86,8 @@ def test_registro_profissional_com_uf_nao_e_nome(nomes):
     a = achados(nomes, "Encaminhada pela Dra. Fernanda Lima Costa, CRM-SP 123456.")
     assert "Fernanda Lima Costa" in a
     assert not any("CRM" in trecho for trecho in a), a
+
+
+def test_parentesco_e_gatilho_para_prenome(nomes):
+    a = achados(nomes, "A filha Juliana, em visita, informou que o pai está melhor.")
+    assert a.get("Juliana", 0) >= 0.5, a

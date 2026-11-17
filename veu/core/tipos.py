@@ -55,6 +55,7 @@ TITULO = _r(TipoDado("TITULO_ELEITOR", "Título de eleitor", "[TÍTULO]", "#1565
 PIS = _r(TipoDado("PIS", "PIS/PASEP/NIS", "[PIS/NIS]", "#5D6D7E", "Documentos", "Dígito verificador validado."))
 CNS = _r(TipoDado("CNS", "Cartão SUS (CNS)", "[CNS]", "#00897B", "Documentos", "15 dígitos, validação oficial."))
 PASSAPORTE = _r(TipoDado("PASSAPORTE", "Passaporte", "[PASSAPORTE]", "#283593", "Documentos", "Perto de “passaporte”."))
+PRONTUARIO = _r(TipoDado("PRONTUARIO", "Número de prontuário", "[PRONTUÁRIO]", "#6A1B9A", "Documentos", "Número logo após “Prontuário”, “Registro hospitalar”…"))
 # Pessoa e contato
 NOME = _r(TipoDado("NOME", "Nome de pessoa", "[NOME]", "#8E44AD", "Pessoa e contato", "NER local + listas de nomes + contexto."))
 ENDERECO = _r(TipoDado("ENDERECO", "Endereço/CEP", "[ENDEREÇO]", "#2E7D32", "Pessoa e contato", "Logradouro, número, complemento, bairro, cidade/UF e CEP."))

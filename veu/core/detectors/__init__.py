@@ -12,6 +12,7 @@ from veu.core.detectors.documentos import (
     DetectorCNS,
     DetectorPassaporte,
     DetectorPIS,
+    DetectorProntuario,
     DetectorRG,
     DetectorTituloEleitor,
 )
@@ -43,6 +44,7 @@ FABRICAS: dict[str, Callable[["Politica"], Detector]] = {
     "PIS": lambda p: DetectorPIS(),
     "CNS": lambda p: DetectorCNS(),
     "PASSAPORTE": lambda p: DetectorPassaporte(),
+    "PRONTUARIO": lambda p: DetectorProntuario(),
     "NOME": lambda p: DetectorNome(usar_ner=p.usar_ner),
     "ENDERECO": lambda p: DetectorEndereco(),
     "TELEFONE": lambda p: DetectorTelefone(),
@@ -97,6 +99,7 @@ __all__ = [
     "DetectorNome",
     "DetectorPIS",
     "DetectorPassaporte",
+    "DetectorProntuario",
     "DetectorPix",
     "DetectorPlaca",
     "DetectorRG",

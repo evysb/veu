@@ -12,7 +12,7 @@ Portuguese. A Portuguese version of this document is available in
 
 Features:
 
-- 18 data types detected, with person names recognized by a language model that
+- 19 data types detected, with person names recognized by a language model that
   runs locally;
 - **local OCR** for scanned PDFs;
 - IT-configurable policy;
@@ -130,17 +130,18 @@ Names marked with *Buscar termo → Marcar todas* or listed under
 
 | Type | How it is detected |
 |---|---|
-| **CPF** (individual taxpayer ID) | with and without mask (including when split across lines), check digits validated |
+| **CPF** (individual taxpayer ID) | with and without mask (including when split across lines), check digits validated; right after the “CPF” label, a masked number with wrong check digits is also marked (lower confidence) |
 | **CNPJ** (company taxpayer ID) | numeric and **alphanumeric** (new Receita Federal format), check digits validated |
 | **RG** (state ID card) | various formats, only near “RG”, “Identidade”, “SSP”… or the issuing agency |
 | **CNH** (driver's license) | 11 digits validated, near “CNH”/“habilitação” |
 | **Título de eleitor** (voter ID) | check digits and state code validated |
 | **PIS/PASEP/NIS** (social security number) | check digit validated |
-| **Cartão SUS (CNS)** (public health card) | 15 digits, official validation (permanent and provisional) |
+| **Cartão SUS (CNS)** (public health card) | 15 digits, official validation (permanent and provisional); right after “Cartão SUS”/“CNS”, also numbers that fail validation |
 | **Passport** | near “passaporte” |
+| **Medical record number** | number right after “Prontuário”, “Nº do prontuário”, “Registro hospitalar”… (any format) |
 | **Person name** | local language model (spaCy) + first-name and surname lists + context (“Sr.”, “paciente”, “nome:”, “assinado por”…) |
 | **Address/CEP** (postal code) | street, number, unit, neighborhood, city/state and CEP; also text after “Endereço:” and “residente na” |
-| **Phone** | landline and mobile, with or without area code (validated) and +55 |
+| **Phone** | landline and mobile, with or without area code (validated) and +55; an invalid area code only in the full format “(00) 90000-1234” |
 | **E-mail** | e-mail address format |
 | **Date of birth** | dates near “nascimento”, “DN”, “nascido em”… |
 | **License plate** | old format and Mercosul |

@@ -70,9 +70,14 @@ class DetectorCNS(Detector):
     def detectar(self, texto: str) -> list[Achado]:
         achados = []
         for m in self._RE.finditer(texto):
+            antes = contexto_antes(texto, m.start(), 35)
+            contexto = tem_palavra_chave(antes, self._CHAVES)
             if not cns_valido(somente_digitos(m.group(0))):
+                # Número fora da validação oficial: só com o rótulo colado
+                # ("Cartão SUS: 700 0000 0000 0000").
+                if tem_palavra_chave(antes[-15:], self._CHAVES):
+                    achados.append(self._achado(m.start(), m.end(), 0.8))
                 continue
-            contexto = tem_palavra_chave(contexto_antes(texto, m.start(), 35), self._CHAVES)
             achados.append(self._achado(m.start(), m.end(), 0.97 if contexto else 0.85))
         return achados
 
@@ -158,4 +163,34 @@ class DetectorPassaporte(Detector):
             if tem_palavra_chave(contexto_antes(texto, m.start(), 30), self._CHAVES):
                 conf = 0.95 if re.fullmatch(r"[A-Z]{2}\d{6}", valor) else 0.8
                 achados.append(self._achado(m.start(), m.end(), conf))
+        return achados
+
+
+class DetectorProntuario(Detector):
+    """Número de prontuário/registro do paciente, logo após o rótulo.
+
+    O formato varia de hospital para hospital (458.921, 2026/001234,
+    HC-123456…), então o detector depende do rótulo: sem ele, um número
+    qualquer não é marcado.
+    """
+
+    tipo = "PRONTUARIO"
+    prioridade = 70
+    _RE = re.compile(
+        r"(?<![\w])"
+        r"(?:n[º°o.]?\s*(?:do\s+)?)?"
+        r"(?:prontu[áa]rio|pront\.|registro\s+hospitalar|registro\s+do\s+paciente|matr[íi]cula\s+hospitalar)"
+        r"(?:\s*(?:n[º°o.]|n[úu]mero|nr\.?)\s*)?"
+        r"[ \t]*[:#\-–]?[ \t]*"
+        r"(?P<valor>(?:(?-i:[A-Z]{1,4})[\- ]?)?\d[\d./\-]{1,18}\d(?:-[\dA-Z])?)"
+        r"(?![\w\-/]|[.,]\d)",
+        re.IGNORECASE,
+    )
+
+    def detectar(self, texto: str) -> list[Achado]:
+        achados = []
+        for m in self._RE.finditer(texto):
+            if len(somente_digitos(m.group("valor"))) < 4:
+                continue
+            achados.append(self._achado(m.start("valor"), m.end("valor"), 0.9))
         return achados

@@ -26,7 +26,9 @@ def test_detecta_cpf_valido(texto, esperado):
 @pytest.mark.parametrize(
     "texto",
     [
-        "CPF: 123.456.789-00",  # dígito verificador errado
+        "123.456.789-00",  # dígito verificador errado, sem o rótulo CPF
+        "CPF 12345678900",  # DV errado e sem máscara
+        "CPF do titular, documento 123.456.789-00",  # rótulo longe demais
         "111.111.111-11",  # sequência repetida
         "000.000.000-00",
         "12345678901234",  # número maior (ex.: CNPJ/código)
@@ -43,3 +45,9 @@ def test_validacao_dv():
     assert cpf_valido("52998224725")
     assert not cpf_valido("52998224724")
     assert gerar_dv_cpf("529982247") == "52998224725"
+
+
+def test_cpf_com_dv_errado_mas_rotulado_e_mascarado():
+    achados = DetectorCPF().detectar("CPF: 123.456.789-00")
+    assert [(a.inicio, a.fim) for a in achados] == [(5, 19)]
+    assert achados[0].confianca == 0.8  # abaixo dos válidos, mas acima do mínimo
