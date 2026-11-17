@@ -79,7 +79,27 @@ class DetectorProfissao(Detector):
         achados = []
         for m in self._RE.finditer(texto):
             ini, fim = _valor_do_campo(texto, m.end(), self._FIM)
-            if fim - ini < 2 or fim - ini > 60 or _vazio(texto[ini:fim]):
+            if fim - ini < 2 or _vazio(texto[ini:fim]):
+                continue
+            fim = self._continuacao(texto, fim)
+            # O valor inteiro identifica ("técnica de enfermagem no Hospital X,
+            # setor de pediatria, plantão noturno"); só um parágrafo longo demais
+            # deixa de parecer um campo de formulário.
+            if fim - ini > 200:
                 continue
             achados.append(self._achado(ini, fim, 0.85))
         return achados
+
+    @staticmethod
+    def _continuacao(texto: str, fim: int) -> int:
+        """Inclui até duas linhas de continuação do valor quebrado ("plantão noturno\\n12x36")."""
+        for _ in range(2):
+            if texto[fim:fim + 1] != "\n" or texto[fim - 1:fim] in ".;":
+                break
+            prox_fim = texto.find("\n", fim + 1)
+            prox_fim = len(texto) if prox_fim < 0 else prox_fim
+            linha = texto[fim + 1:prox_fim].strip()
+            if not linha or len(linha) > 40 or ":" in linha or not (linha[0].islower() or linha[0].isdigit()):
+                break
+            fim = fim + 1 + texto[fim + 1:prox_fim].rstrip().__len__()
+        return fim

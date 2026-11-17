@@ -28,7 +28,10 @@ _TITULOS = {"sr", "sra", "srta", "dr", "dra", "prof", "profa", "dom", "padre", "
 _GATILHOS = (
     "sr.", "sra.", "srta.", "sr", "sra", "dr.", "dra.", "dr", "dra", "paciente", "nome", "nome completo",
     "assinado por", "assinado digitalmente por", "assinatura", "responsavel", "mae", "pai", "genitor",
-    "genitora", "filho", "filha", "irmao", "irma", "neto", "neta", "sobrinho", "sobrinha", "cliente", "requerente", "requerido", "interessado", "interessada", "testemunha",
+    "genitora", "filho", "filha", "irmao", "irma", "neto", "neta", "sobrinho", "sobrinha", "cliente",
+    "filhos", "filhas", "irmaos", "irmas", "netos", "netas", "sobrinhos", "sobrinhas", "marido",
+    "companheiro", "companheira", "namorado", "namorada", "noivo", "noiva", "cunhado", "cunhada",
+    "genro", "nora", "sogro", "sogra", "primo", "prima", "tio", "tia", "avo", "requerente", "requerido", "interessado", "interessada", "testemunha",
     "declarante", "acompanhante", "filho de", "filha de", "esposo", "esposa", "conjuge", "medico",
     "medica", "enfermeiro", "enfermeira", "solicitante", "beneficiario", "titular", "portador", "portadora",
     "aluno", "aluna", "servidor", "servidora", "funcionario", "funcionaria", "autor", "autora", "reu", "re",
@@ -49,6 +52,16 @@ _PARADAS = {
     "prontuario", "matricula", "registro", "assinatura", "documento", "observacoes", "obs", "diagnostico",
     "mae", "pai", "responsavel", "sr", "sra", "dr", "dra", "hospital", "clinica", "laudo", "exame",
 }
+
+
+# Termos de laboratório e nutrição que o NER às vezes toma por nomes.
+_NAO_INICIAM_NOME = frozenset({
+    "vitamina", "acido", "complexo", "omega", "sulfato", "cloreto", "carbonato", "citrato", "oxido",
+    "ferro", "zinco", "magnesio", "calcio", "potassio", "sodio", "fosforo", "selenio", "cobre", "iodo",
+    "ferritina", "transferrina", "hemoglobina", "hematocrito", "albumina", "proteina", "glicose", "glicemia",
+    "colesterol", "triglicerideos", "creatinina", "ureia", "bilirrubina", "insulina", "tsh", "tgp", "tgo",
+    "beta", "alfa", "tipo", "grau", "escala", "indice", "teste", "exame", "dieta", "suplemento",
+})
 
 
 def _eh_parada(palavra_normalizada: str) -> bool:
@@ -110,6 +123,11 @@ class DetectorNome(Detector):
         self.usar_ner = usar_ner
         self._prenomes = conjunto_normalizado("prenomes.txt")
         self._sobrenomes = conjunto_normalizado("sobrenomes.txt")
+        # Primeira palavra que nunca começa nome de pessoa ("Vitamina B12",
+        # "Losartana Potássica"): termos clínicos e medicamentos do dicionário.
+        self._nao_iniciam_nome = _NAO_INICIAM_NOME | {
+            m.split()[0] for m in conjunto_normalizado("medicamentos.txt") if m
+        }
         self._cache_ner: dict[str, list[tuple[int, int]]] = {}
         self.ner_disponivel = False
 
@@ -167,6 +185,8 @@ class DetectorNome(Detector):
             idx = [k for k, t in enumerate(tokens) if t[0] >= e_ini and t[1] <= e_fim]
             palavras = [k for k in idx if norm[k] not in _CONECTORES]
             if not palavras or any(not tokens[k][2][0].isupper() for k in palavras):
+                continue
+            if norm[palavras[0]] in self._nao_iniciam_nome:
                 continue
             if any(_eh_parada(norm[k]) for k in palavras) or self._precedido_por_lugar(tokens, norm, idx[0]):
                 continue

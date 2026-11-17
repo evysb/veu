@@ -54,3 +54,18 @@ def test_profissao(texto, esperado):
 @pytest.mark.parametrize("texto", ["Profissão: (em branco)", "Ocupação: -", "a profissão dela é exigente"])
 def test_profissao_negativos(texto):
     assert trechos(DetectorProfissao(), texto) == []
+
+
+def test_ocupacao_longa_com_continuacao_na_linha_de_baixo():
+    texto = (
+        "Ocupação: técnica de enfermagem no Hospital Santa Aurora, setor de pediatria, plantão noturno\n"
+        "12x36\nAntropometria e composição corporal"
+    )
+    assert trechos(DetectorProfissao(), texto) == [
+        "técnica de enfermagem no Hospital Santa Aurora, setor de pediatria, plantão noturno\n12x36"
+    ]
+
+
+def test_profissao_nao_engole_o_campo_seguinte():
+    texto = "Profissão: professora\nidade: 52\nSexo: feminino"
+    assert trechos(DetectorProfissao(), texto) == ["professora"]
