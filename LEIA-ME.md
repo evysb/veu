@@ -7,7 +7,7 @@ enviados para a internet. Não há chamadas de rede, telemetria nem IA na nuvem.
 
 Recursos:
 
-- 19 tipos de dado detectados, com nomes reconhecidos por um modelo de
+- 21 tipos de dado detectados, com nomes reconhecidos por um modelo de
   linguagem que roda localmente;
 - **OCR local** para PDFs escaneados;
 - política configurável pelo TI;
@@ -132,12 +132,14 @@ são do tipo “Termo marcado” e continuam com o rótulo `[TARJA]`.
 | **PIS/PASEP/NIS** | dígito verificador validado |
 | **Cartão SUS (CNS)** | 15 dígitos, validação oficial (definitivo e provisório); logo após “Cartão SUS”/“CNS”, também números fora da validação |
 | **Passaporte** | perto de “passaporte” |
+| **Convênio e carteirinha** | nome do plano após “Convênio:”/“Plano de saúde:” e número após “carteirinha”, “carteira do convênio”… (“particular”, “SUS” e campos em branco ficam visíveis) |
 | **Número de prontuário** | número logo após “Prontuário”, “Nº do prontuário”, “Registro hospitalar”… (qualquer formato) |
 | **Nome de pessoa** | modelo de linguagem local (spaCy) + listas de prenomes e sobrenomes + contexto (“Sr.”, “paciente”, “nome:”, “assinado por”…) |
 | **Endereço/CEP** | logradouro, número, complemento, bairro, cidade/UF e CEP; também o texto após “Endereço:” e “residente na” |
 | **Telefone** | fixo e celular, com ou sem DDD (validado) e +55; DDD inexistente só no formato completo “(00) 90000-1234” |
 | **E-mail** | formato de endereço de e-mail |
 | **Data de nascimento** | datas perto de “nascimento”, “DN”, “nascido em”… |
+| **Profissão** | valor após “Profissão:”, “Ocupação:”, “Cargo:” em formulários (profissões citadas em texto livre não são detectadas) |
 | **Placa de veículo** | modelo antigo e Mercosul |
 | **Dado de saúde** (desligado por padrão) | CID-10 (após “CID” ou com contexto clínico), doenças e condições sensíveis, medicamentos |
 | **Registro profissional** | CRM, CRO, COREN, CRP, CRF… |

@@ -12,7 +12,7 @@ Portuguese. A Portuguese version of this document is available in
 
 Features:
 
-- 19 data types detected, with person names recognized by a language model that
+- 21 data types detected, with person names recognized by a language model that
   runs locally;
 - **local OCR** for scanned PDFs;
 - IT-configurable policy;
@@ -138,12 +138,14 @@ Names marked with *Buscar termo → Marcar todas* or listed under
 | **PIS/PASEP/NIS** (social security number) | check digit validated |
 | **Cartão SUS (CNS)** (public health card) | 15 digits, official validation (permanent and provisional); right after “Cartão SUS”/“CNS”, also numbers that fail validation |
 | **Passport** | near “passaporte” |
+| **Health plan and card** | plan name after “Convênio:”/“Plano de saúde:” and card number after “carteirinha”, “carteira do convênio”… (“particular”, “SUS” and blanks are left visible) |
 | **Medical record number** | number right after “Prontuário”, “Nº do prontuário”, “Registro hospitalar”… (any format) |
 | **Person name** | local language model (spaCy) + first-name and surname lists + context (“Sr.”, “paciente”, “nome:”, “assinado por”…) |
 | **Address/CEP** (postal code) | street, number, unit, neighborhood, city/state and CEP; also text after “Endereço:” and “residente na” |
 | **Phone** | landline and mobile, with or without area code (validated) and +55; an invalid area code only in the full format “(00) 90000-1234” |
 | **E-mail** | e-mail address format |
 | **Date of birth** | dates near “nascimento”, “DN”, “nascido em”… |
+| **Occupation** | value after “Profissão:”, “Ocupação:”, “Cargo:” in forms (occupations mentioned in free text are not detected) |
 | **License plate** | old format and Mercosul |
 | **Health data** (off by default) | ICD-10 codes (after “CID” or with clinical context), sensitive diseases and conditions, medications |
 | **Professional registration** | CRM, CRO, COREN, CRP, CRF… |

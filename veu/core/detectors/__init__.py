@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Callable
 
 from veu.core.detectors.base import Detector
+from veu.core.detectors.campos import DetectorConvenio, DetectorProfissao
 from veu.core.detectors.cpf import DetectorCPF
 from veu.core.detectors.documentos import (
     DetectorCNH,
@@ -45,12 +46,14 @@ FABRICAS: dict[str, Callable[["Politica"], Detector]] = {
     "CNS": lambda p: DetectorCNS(),
     "PASSAPORTE": lambda p: DetectorPassaporte(),
     "PRONTUARIO": lambda p: DetectorProntuario(),
+    "CONVENIO": lambda p: DetectorConvenio(),
     "NOME": lambda p: DetectorNome(usar_ner=p.usar_ner),
     "ENDERECO": lambda p: DetectorEndereco(),
     "TELEFONE": lambda p: DetectorTelefone(),
     "EMAIL": lambda p: DetectorEmail(),
     "DATA_NASCIMENTO": lambda p: DetectorDataNascimento(),
     "PLACA": lambda p: DetectorPlaca(),
+    "PROFISSAO": lambda p: DetectorProfissao(),
     "SAUDE": lambda p: DetectorSaude(),
     "CRM": lambda p: DetectorRegistroProfissional(),
     "CONTA_BANCARIA": lambda p: DetectorContaBancaria(),
@@ -98,7 +101,9 @@ __all__ = [
     "DetectorEndereco",
     "DetectorNome",
     "DetectorPIS",
+    "DetectorConvenio",
     "DetectorPassaporte",
+    "DetectorProfissao",
     "DetectorProntuario",
     "DetectorPix",
     "DetectorPlaca",
