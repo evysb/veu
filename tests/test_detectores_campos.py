@@ -69,3 +69,12 @@ def test_ocupacao_longa_com_continuacao_na_linha_de_baixo():
 def test_profissao_nao_engole_o_campo_seguinte():
     texto = "Profissão: professora\nidade: 52\nSexo: feminino"
     assert trechos(DetectorProfissao(), texto) == ["professora"]
+
+
+@pytest.mark.parametrize(
+    "seguinte",
+    ["2. Por que você marcou esta consulta?", "3) Fale mais sobre o que sente", "10 - alergias", "por que veio hoje?"],
+)
+def test_profissao_nao_engole_a_pergunta_seguinte(seguinte):
+    texto = f"Profissão: professora\n{seguinte}\n“Dor de cabeça há umas 3 semanas.”"
+    assert trechos(DetectorProfissao(), texto) == ["professora"]

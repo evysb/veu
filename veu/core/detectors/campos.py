@@ -19,6 +19,10 @@ _VAZIOS = {
 }
 
 
+# Início de item numerado: "2. Por que…", "3) Fale…", "10 - Alergias".
+_ITEM_NUMERADO = re.compile(r"\d{1,3}\s*(?:[.)]|[–-]\s)\s*\D")
+
+
 def _vazio(valor: str) -> bool:
     return normalizar_preservando_posicoes(valor).strip(" .()") in {v.strip("()") for v in _VAZIOS}
 
@@ -101,5 +105,7 @@ class DetectorProfissao(Detector):
             linha = texto[fim + 1:prox_fim].strip()
             if not linha or len(linha) > 40 or ":" in linha or not (linha[0].islower() or linha[0].isdigit()):
                 break
+            if _ITEM_NUMERADO.match(linha) or linha.endswith("?"):
+                break  # próxima pergunta do questionário ("2. Por que você…?")
             fim = fim + 1 + texto[fim + 1:prox_fim].rstrip().__len__()
         return fim
