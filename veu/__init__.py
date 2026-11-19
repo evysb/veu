@@ -1,3 +1,3 @@
 """Véu — anonimizador de PDF 100% offline."""
 
-__version__ = "0.3.1"
+__version__ = "0.3.2"
