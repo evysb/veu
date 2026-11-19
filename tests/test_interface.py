@@ -103,3 +103,23 @@ def test_painel_mostra_pessoa_e_menu_junta(qtbot, janela, pdfs):
     menu = QMenu()
     janela._menu_pessoas(menu, ids[:1])
     assert any(a.text().startswith("Renomear pessoa [P") for a in menu.actions())
+
+
+def test_aceitar_pendentes_mantem_rejeitadas(qtbot, janela, pdfs):
+    from veu.core.models import Status
+
+    abrir(qtbot, janela, pdfs["prontuario"])
+    dets = janela.revisao.deteccoes
+    assert len(dets) >= 2
+    rejeitada, aceita = dets[0].id, dets[1].id
+    janela.revisao.definir_status([rejeitada], Status.REJEITADA)
+    janela.revisao.definir_status([aceita], Status.ACEITA)
+    janela._atualizar_tudo()
+
+    pendentes = janela.painel.ids_pendentes_visiveis()
+    assert rejeitada not in pendentes and aceita not in pendentes
+    janela.painel._emitir(pendentes, Status.ACEITA)
+
+    por_id = {d.id: d.status for d in janela.revisao.deteccoes}
+    assert por_id[rejeitada] == Status.REJEITADA
+    assert all(st != Status.PENDENTE for st in por_id.values())

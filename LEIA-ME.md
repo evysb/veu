@@ -70,7 +70,8 @@ Veu.exe                                       # versão empacotada
    - **Buscar termo → Marcar todas:** marca todas as ocorrências de um nome,
      projeto etc. (ignora maiúsculas e acentos);
    - a lista lateral filtra por tipo e status e permite aceitar ou rejeitar em
-     lote ("todas da lista" age sobre o que o filtro mostra);
+     lote ("pendentes da lista" muda só as pendentes que o filtro mostra e mantém
+     as que já foram aceitas ou rejeitadas);
    - navegue com **PgUp/PgDown**; zoom com **Ctrl + roda do mouse**,
      **Ctrl+/Ctrl−** e **Ctrl+0** (ajustar à largura).
 4. **Anonimizar:** *Anonimizar e salvar…* (Ctrl+S). Escolha o estilo da tarja
