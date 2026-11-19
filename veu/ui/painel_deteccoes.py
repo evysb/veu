@@ -150,14 +150,16 @@ class PainelDeteccoes(QWidget):
 
         b_aceitar = QPushButton("Aceitar selecionadas")
         b_rejeitar = QPushButton("Rejeitar selecionadas")
-        b_aceitar_todas = QPushButton("Aceitar todas da lista")
-        b_rejeitar_todas = QPushButton("Rejeitar todas da lista")
+        b_aceitar_todas = QPushButton("Aceitar pendentes da lista")
+        b_rejeitar_todas = QPushButton("Rejeitar pendentes da lista")
         b_aceitar.clicked.connect(lambda: self._emitir(self.ids_selecionados(), Status.ACEITA))
         b_rejeitar.clicked.connect(lambda: self._emitir(self.ids_selecionados(), Status.REJEITADA))
-        b_aceitar_todas.clicked.connect(lambda: self._emitir(self.ids_visiveis(), Status.ACEITA))
-        b_rejeitar_todas.clicked.connect(lambda: self._emitir(self.ids_visiveis(), Status.REJEITADA))
+        b_aceitar_todas.clicked.connect(lambda: self._emitir(self.ids_pendentes_visiveis(), Status.ACEITA))
+        b_rejeitar_todas.clicked.connect(lambda: self._emitir(self.ids_pendentes_visiveis(), Status.REJEITADA))
         b_aceitar.setToolTip("Atalho: A")
         b_rejeitar.setToolTip("Atalho: R (Del exclui marcações manuais)")
+        b_aceitar_todas.setToolTip("Aceita as pendentes que o filtro mostra; as já rejeitadas continuam rejeitadas")
+        b_rejeitar_todas.setToolTip("Rejeita as pendentes que o filtro mostra; as já aceitas continuam aceitas")
 
         filtros = QHBoxLayout()
         filtros.addWidget(self.combo_tipo, 1)
@@ -223,6 +225,16 @@ class PainelDeteccoes(QWidget):
 
     def ids_visiveis(self) -> list[str]:
         return [self.filtro.index(r, 0).data(Qt.UserRole) for r in range(self.filtro.rowCount())]
+
+    def ids_pendentes_visiveis(self) -> list[str]:
+        """Ids que o filtro mostra e ainda não foram revisados (aceitos ou rejeitados)."""
+        ids = []
+        for r in range(self.filtro.rowCount()):
+            linha = self.filtro.mapToSource(self.filtro.index(r, 0)).row()
+            d = self.modelo.deteccao(linha)
+            if d.status == Status.PENDENTE:
+                ids.append(d.id)
+        return ids
 
     def selecionar(self, ids: list[str], rolar: bool = True) -> None:
         self._sincronizando = True

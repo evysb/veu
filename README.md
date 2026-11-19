@@ -74,7 +74,8 @@ Veu.exe                                       # packaged version
    - **Buscar termo → Marcar todas** (search term → mark all): marks every
      occurrence of a name, project, etc. (case- and accent-insensitive);
    - the side list filters by type and status and allows bulk accept/reject
-     ("todas da lista" — "all in list" — acts on what the filter shows);
+     ("pendentes da lista" — "pending in list" — changes only the pending
+     detections the filter shows, keeping the ones already accepted or rejected);
    - navigate with **PgUp/PgDown**; zoom with **Ctrl + mouse wheel**,
      **Ctrl+/Ctrl−** and **Ctrl+0** (fit to width).
 4. **Anonymize:** *Anonimizar e salvar…* (Anonymize and save, Ctrl+S). Choose
