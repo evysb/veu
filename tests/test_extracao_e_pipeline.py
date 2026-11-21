@@ -1,3 +1,4 @@
+import os
 import time
 
 from tests.fixtures import gerar_pdfs as g
@@ -52,8 +53,10 @@ def test_pagina_escaneada_sem_ocr_gera_aviso(pdfs):
 
 
 def test_desempenho_50_paginas(pdfs):
+    # Máquinas compartilhadas de CI são mais lentas: VEU_FATOR_TEMPO multiplica o limite.
+    limite = 5 * float(os.environ.get("VEU_FATOR_TEMPO", "1"))
     inicio = time.perf_counter()
     a = analisar(str(pdfs["longo"]))
-    assert time.perf_counter() - inicio < 5
+    assert time.perf_counter() - inicio < limite
     assert a.num_paginas == 50
     assert sum(1 for d in a.deteccoes if d.tipo in ("CPF", "EMAIL", "TELEFONE")) == 150

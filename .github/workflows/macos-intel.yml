@@ -67,6 +67,9 @@ jobs:
           .venv/bin/python -m pip install -q -e .
 
       - name: Construir e testar
+        env:
+          # O runner compartilhado é mais lento: o teste de desempenho aceita até 4× o limite (20 s).
+          VEU_FATOR_TEMPO: "4"
         run: bash empacotamento/construir.sh
 
       - name: Nome do pacote
