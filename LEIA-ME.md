@@ -347,8 +347,13 @@ São os mesmos passos do Windows, mais a assinatura. O script:
 O app ocupa cerca de 260 MB, e o `.zip`, 145 MB. Pontos de atenção:
 
 - **Arquitetura:** o resultado só roda na mesma arquitetura do Mac que o
-  construiu. Para Macs Intel, rode o script num Mac Intel (ou num runner
-  `macos-13` do GitHub Actions).
+  construiu. A versão Intel (`x86_64`) é gerada pelo GitHub Actions
+  ([.github/workflows/macos-intel.yml](.github/workflows/macos-intel.yml)) num
+  runner `macos-15-intel`: na aba *Actions*, rode *Build macOS (Intel)*
+  informando uma tag (por exemplo `v0.3.2`) para anexar o `.zip` ao release
+  dessa tag. Enviar uma tag `v*` também dispara o workflow, que anexa o `.zip` se
+  o release já existir. Sem tag, o `.zip` fica disponível como artefato da
+  execução.
 - **macOS mínimo:** 13. O PySide6 está limitado a versões abaixo da 6.12, porque
   o Qt 6.12 não abre em macOS anteriores ao 14.4.
 - **Gatekeeper:** sem Developer ID e notarização (`xcrun notarytool`), os

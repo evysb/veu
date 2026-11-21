@@ -1,0 +1,102 @@
+# Constrói o Véu para Macs Intel (x86_64): dist/Veu-<versão>-macos-x86_64.zip
+#
+# Roda o mesmo empacotamento/construir.sh usado localmente (modelos, testes,
+# PyInstaller, assinatura ad hoc e teste do Veu.app) num runner Intel.
+#
+# Quando roda:
+# - manualmente (aba Actions → "Build macOS (Intel)" → Run workflow); informe uma
+#   tag (ex.: v0.3.2) para anexar o .zip ao release dessa tag;
+# - ao enviar uma tag v*: anexa o .zip ao release da tag, se ele já existir;
+# - em PRs que mexem no empacotamento ou nas dependências (só gera o artefato).
+#
+# O macos-15-intel é o último runner Intel do GitHub (suporte até 2027).
+name: Build macOS (Intel)
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag do release para anexar o .zip (ex.: v0.3.2). Vazio: só gera o artefato."
+        required: false
+        default: ""
+  push:
+    tags: ["v*"]
+  pull_request:
+    paths:
+      - "empacotamento/**"
+      - "pyproject.toml"
+      - "requirements.txt"
+      - "veu/ui/app.py"
+      - ".github/workflows/macos-intel.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: macos-intel-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  construir:
+    runs-on: macos-15-intel
+    timeout-minutes: 60
+    permissions:
+      contents: write  # anexar o .zip ao release
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # Na execução manual com tag, constrói exatamente o código da tag.
+          ref: ${{ github.event.inputs.tag || github.ref }}
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements.txt
+
+      - name: Conferir arquitetura
+        run: |
+          test "$(uname -m)" = "x86_64" || { echo "Runner não é Intel: $(uname -m)"; exit 1; }
+          sw_vers
+
+      - name: Ambiente .venv
+        run: |
+          python -m venv .venv
+          .venv/bin/python -m pip install -q --upgrade pip
+          .venv/bin/python -m pip install -q -r requirements.txt
+          .venv/bin/python -m pip install -q -e .
+
+      - name: Construir e testar
+        env:
+          # O runner compartilhado é mais lento: o teste de desempenho aceita até 4× o limite (20 s).
+          VEU_FATOR_TEMPO: "4"
+        run: bash empacotamento/construir.sh
+
+      - name: Nome do pacote
+        id: pacote
+        run: |
+          zip=$(ls dist/Veu-*-macos-x86_64.zip)
+          echo "zip=$zip" >> "$GITHUB_OUTPUT"
+          echo "nome=$(basename "$zip" .zip)" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: ${{ steps.pacote.outputs.nome }}
+          path: ${{ steps.pacote.outputs.zip }}
+          # O .zip já é compactado; o artefato só o embrulha.
+          compression-level: 0
+          retention-days: 30
+
+      - name: Anexar ao release
+        if: github.ref_type == 'tag' || github.event.inputs.tag != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event.inputs.tag || github.ref_name }}
+          ZIP: ${{ steps.pacote.outputs.zip }}
+        run: |
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" "$ZIP" --clobber
+            echo "Anexado ao release $TAG"
+          else
+            echo "::notice::O release $TAG ainda não existe. Crie o release e rode este workflow manualmente informando a tag $TAG."
+          fi
