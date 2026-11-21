@@ -12,3 +12,5 @@ dist/
 build/
 empacotamento/veu.ico
 build_log.txt
+empacotamento/veu.icns
+.DS_Store

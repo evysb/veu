@@ -52,7 +52,8 @@ def test_pagina_mista_ocr_so_nas_imagens(pdfs):
 def test_prontuario_escaneado_ponta_a_ponta(pdfs, tmp_path):
     a = analisar(str(pdfs["prontuario_escaneado"]))
     tipos = {d.tipo for d in a.deteccoes}
-    assert {"NOME", "CPF", "RG", "CNS", "ENDERECO", "TELEFONE", "CNPJ", "CRM"} <= tipos
+    # EMAIL: o OCR lê o "@" deste e-mail como "Q"; o detector precisa achá-lo mesmo assim.
+    assert {"NOME", "CPF", "RG", "CNS", "ENDERECO", "TELEFONE", "EMAIL", "CNPJ", "CRM"} <= tipos
     assert "SAUDE" not in tipos  # desligado na política padrão
     Revisao(a).aceitar_pendentes()
     saida = tmp_path / "escaneado_anonimizado.pdf"

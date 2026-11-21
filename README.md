@@ -34,6 +34,23 @@ No Python, internet connection or administrator rights required. OCR and the
 name-recognition model are already bundled in the folder. For a Start menu
 entry, create a shortcut to `Veu.exe`.
 
+### For end users (macOS)
+
+Requires macOS 13 (Ventura) or newer. There are separate builds for Apple
+Silicon (`arm64`, M1 and later) and Intel (`x86_64`) Macs.
+
+1. Unzip `Veu-<version>-macos-<architecture>.zip` and drag `Veu.app` to the
+   *Applications* folder.
+2. **First launch:** the app is not signed with an Apple Developer ID, so macOS
+   refuses to open it. Double-click `Veu.app`, close the warning, then go to
+   *System Settings → Privacy & Security* and click *Open Anyway* (on macOS 13
+   and 14, right-click → *Open* also works). This is only needed once. IT can
+   skip this step with `xattr -dr com.apple.quarantine /Applications/Veu.app`.
+
+No Python, internet connection or administrator rights required. You can also
+open a PDF with *Open With → Véu* or by dropping it on the Dock icon. The
+command line is at `/Applications/Veu.app/Contents/MacOS/anonimizar`.
+
 ### For development
 
 Requirements: Python 3.11 or newer (64-bit).
@@ -51,6 +68,15 @@ This setup is the **only step that uses the internet**. It downloads:
 - the spaCy Portuguese model (`pt_core_news_md`, about 40 MB), used to
   recognize names;
 - the OCR language file (`por.traineddata`, 8 MB), whose SHA-256 is verified.
+
+On macOS:
+
+```bash
+python3 -m venv .venv
+.venv/bin/python -m pip install -r requirements.txt
+.venv/bin/python -m pip install -e .
+.venv/bin/python empacotamento/baixar_modelos.py
+```
 
 After that, everything works offline.
 
@@ -202,6 +228,10 @@ field) are shown in Portuguese, pointing to the offending field.
 settings screen, add `bloqueada: true` and copy the file to
 `C:\ProgramData\Veu\politica.yaml` on each machine (or via GPO/Intune).
 
+On macOS, `%PROGRAMDATA%\Veu` is `/Library/Application Support/Veu` and
+`%APPDATA%\Veu` is `~/Library/Application Support/Veu` (deploy via MDM, such as
+Jamf or Intune).
+
 ## Scanned PDFs (OCR)
 
 Véu decides, page by page, when to apply OCR:
@@ -217,8 +247,9 @@ During verification, Véu rebuilds the page from the images alone (without the
 black boxes on top) and runs OCR again, to prove nothing was left behind.
 
 > ⚠ **OCR can make mistakes**: swapping characters (`O`↔`0`, `@`→`Q`), merging
-> or splitting words, missing small, handwritten or rotated text. An e-mail
-> whose `@` is misrecognized, for example, will not be detected. On OCR pages,
+> or splitting words, missing small, handwritten or rotated text. Véu recognizes
+> e-mails whose `@` was read as `Q`, `©`, `®`, `&` or `(a)`, but other misreadings
+> can still keep a piece of data from being detected. On OCR pages,
 > Véu shows a warning, and **visual review matters even more**. OCR boxes are
 > enlarged automatically, because OCR tends to return tight boxes.
 
@@ -228,7 +259,8 @@ OCR resolution and activation are under *Configurações… → OCR e auditoria*
 ## Audit
 
 On every anonymization, Véu writes a **receipt** to
-`%LOCALAPPDATA%\Veu\auditoria\recibos.jsonl` containing:
+`%LOCALAPPDATA%\Veu\auditoria\recibos.jsonl` (on macOS,
+`~/Library/Application Support/Veu/auditoria/recibos.jsonl`) containing:
 
 - date and time;
 - system user and machine name;
@@ -273,9 +305,12 @@ anonimizar --help
 - Exit codes: `0` success · `1` verification found problems ·
   `2` nothing was written (missing `--sem-revisao`) · `3` usage or file error.
 
-In the development version, the command is `.\.venv\Scripts\anonimizar.exe`.
+In the development version, the command is `.\.venv\Scripts\anonimizar.exe`
+(`.venv/bin/anonimizar` on macOS).
 
 ## Packaging
+
+### Windows
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File empacotamento\construir.ps1
@@ -295,15 +330,45 @@ The output takes about 350 MB unpacked and 155 MB zipped. It contains
 `Veu.exe`, `anonimizar.exe`, the name model, OCR, the dictionaries, the sample
 policy and the Portuguese `LEIA-ME.md`.
 
-**macOS and Linux:** there are no builds for these systems yet. PyInstaller
-must run on each operating system, so `construir.ps1` only produces the Windows
-version.
+### macOS
+
+```bash
+bash empacotamento/construir.sh
+```
+
+Same steps as on Windows, plus signing. The script:
+
+1. downloads and verifies the models, runs the tests and generates the icon
+   (`veu.icns`);
+2. runs PyInstaller, which produces `dist/Veu.app` with `Veu` and `anonimizar`
+   in `Contents/MacOS/`;
+3. signs the app: *ad hoc* by default, or with your certificate if you set
+   `VEU_IDENTIDADE="Developer ID Application: …"`;
+4. tests `anonimizar` on a native and a scanned medical record, and `Veu` with a
+   startup test;
+5. produces `dist/Veu-<version>-macos-<architecture>.zip`, with `Veu.app`, the
+   sample policy and `LEIA-ME.md`.
+
+The app takes about 260 MB, and the `.zip` 145 MB. Points to note:
+
+- **Architecture:** the build runs only on the same architecture as the Mac
+  that built it. For Intel Macs, run the script on an Intel Mac (or on a
+  `macos-13` GitHub Actions runner).
+- **Minimum macOS:** 13. PySide6 is pinned below 6.12 because Qt 6.12 does not
+  open on macOS versions older than 14.4.
+- **Gatekeeper:** without a Developer ID and notarization (`xcrun notarytool`),
+  users have to allow the app on first launch (see *Installation*).
+
+**Linux:** there are no builds yet.
 
 ## Tests
 
 ```powershell
 .\.venv\Scripts\python.exe -m pytest
 ```
+
+On macOS, `.venv/bin/python -m pytest`. The interface tests run with Qt's
+`offscreen` platform there (no windows are shown).
 
 The test PDFs are **synthetic, with fictitious data**: native text, multiple
 columns, a table, text split across lines, a rotated page, a scanned page, a

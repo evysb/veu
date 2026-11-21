@@ -1,5 +1,5 @@
 pymupdf==1.28.2
-PySide6>=6.6
+PySide6>=6.6,<6.12
 pydantic>=2.5
 PyYAML>=6.0
 pytest>=8

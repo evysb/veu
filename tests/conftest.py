@@ -1,6 +1,14 @@
+import os
+import sys
 from pathlib import Path
 
 import pytest
+
+# macOS: com janelas nativas, o laço de eventos dos testes de interface pode ficar parado
+# (o app em si funciona; o empacotamento testa o Veu.app de verdade). "offscreen" também
+# permite rodar os testes sem tela, como no CI.
+if sys.platform == "darwin":
+    os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 from tests.fixtures import gerar_pdfs
 from veu.core.policy import locais
