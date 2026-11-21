@@ -1,8 +1,12 @@
 # -*- mode: python ; coding: utf-8 -*-
-"""PyInstaller: gera dist/Veu/ com Veu.exe (interface) e anonimizar.exe (linha de comando).
+"""PyInstaller: gera o Véu com a interface (Veu) e a linha de comando (anonimizar).
+
+- Windows: dist/Veu/ com Veu.exe e anonimizar.exe.
+- macOS:   dist/Veu.app, com o anonimizar em Veu.app/Contents/MacOS/.
 
 Uso (a partir da raiz do projeto):  pyinstaller empacotamento/veu.spec --noconfirm
-Prefira o script empacotamento/construir.ps1, que prepara os modelos e testa o resultado.
+Prefira os scripts empacotamento/construir.ps1 (Windows) e empacotamento/construir.sh (macOS),
+que preparam os modelos e testam o resultado.
 
 Modo "onedir" (pasta) de propósito: as bibliotecas do Qt (LGPL) ficam como
 arquivos separados e substituíveis, como a licença pede, e o programa abre
@@ -10,13 +14,18 @@ mais rápido do que no modo "onefile".
 """
 
 import os
+import sys
 from pathlib import Path
 
 import pt_core_news_md
 from PyInstaller.utils.hooks import collect_all, collect_submodules
 
 RAIZ = Path(SPECPATH).parent
-ICONE = str(RAIZ / "empacotamento" / "veu.ico") if (RAIZ / "empacotamento" / "veu.ico").exists() else None
+MACOS = sys.platform == "darwin"
+_icone = RAIZ / "empacotamento" / ("veu.icns" if MACOS else "veu.ico")
+ICONE = str(_icone) if _icone.exists() else None
+sys.path.insert(0, str(RAIZ))
+from veu import __version__ as VERSAO  # noqa: E402
 
 # --- dados embutidos ---------------------------------------------------------
 tessdata = RAIZ / "veu" / "modelos" / "tessdata" / "por.traineddata"
@@ -69,11 +78,17 @@ def analise(script):
     )
 
 
+_QT_SEM_USO = ("qtquick", "qtqml", "qtvirtualkeyboard", "qtpdf")
+
+
 def _desnecessario(destino: str) -> bool:
     """Partes do Qt que o Véu não usa (interface só com widgets, sem QML/OpenGL)."""
     nome = destino.replace("\\", "/").lower()
     base = nome.rsplit("/", 1)[-1]
     if base in ("opengl32sw.dll", "qt6pdf.dll") or base.startswith(("qt6quick", "qt6qml", "qt6virtualkeyboard")):
+        return True
+    # macOS: o Qt vem em frameworks (QtQuick.framework/Versions/A/QtQuick, libqtquick*.dylib...)
+    if any(parte.removeprefix("lib").startswith(_QT_SEM_USO) for parte in nome.split("/")):
         return True
     if "/translations/" in nome and base.endswith(".qm"):
         return not ("_pt" in base)  # mantém só as traduções em português
@@ -101,8 +116,35 @@ exe_cli = EXE(
     console=True, icon=ICONE, upx=False,
 )
 
-COLLECT(
+pasta = COLLECT(
     exe_gui, a_gui.binaries, a_gui.datas,
     exe_cli, a_cli.binaries, a_cli.datas,
     name="Veu", upx=False,
 )
+
+if MACOS:
+    # O primeiro executável da pasta (Veu) é o que abre ao clicar no app.
+    BUNDLE(
+        pasta,
+        name="Veu.app",
+        icon=ICONE,
+        bundle_identifier="io.github.evysb.veu",
+        version=VERSAO,
+        info_plist={
+            "CFBundleName": "Véu",
+            "CFBundleDisplayName": "Véu",
+            "CFBundleShortVersionString": VERSAO,
+            "CFBundleVersion": VERSAO,
+            "CFBundleDevelopmentRegion": "pt_BR",
+            "LSMinimumSystemVersion": "13.0",
+            "NSHighResolutionCapable": True,
+            "NSHumanReadableCopyright": "Licença AGPL-3.0",
+            # Permite "Abrir com > Véu" e arrastar PDFs para o ícone no Dock.
+            "CFBundleDocumentTypes": [{
+                "CFBundleTypeName": "Documento PDF",
+                "CFBundleTypeRole": "Editor",
+                "LSHandlerRank": "Alternate",
+                "LSItemContentTypes": ["com.adobe.pdf"],
+            }],
+        },
+    )

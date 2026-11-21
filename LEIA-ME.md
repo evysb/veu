@@ -29,6 +29,24 @@ Não precisa de Python, de internet nem de permissão de administrador. O OCR e 
 modelo de reconhecimento de nomes já vêm dentro da pasta. Para o atalho no menu
 Iniciar, crie um atalho para `Veu.exe`.
 
+### Para usar (macOS)
+
+Requer macOS 13 (Ventura) ou mais recente. Há versões separadas para Macs com
+Apple Silicon (`arm64`, M1 em diante) e com Intel (`x86_64`).
+
+1. Descompacte `Veu-<versão>-macos-<arquitetura>.zip` e arraste o `Veu.app` para
+   a pasta *Aplicativos*.
+2. **Primeira abertura:** o app não é assinado com um Developer ID da Apple,
+   então o macOS recusa abri-lo. Dê dois cliques no `Veu.app`, feche o aviso e
+   vá em *Ajustes do Sistema → Privacidade e Segurança* → *Abrir Mesmo Assim*
+   (no macOS 13 e 14, botão direito → *Abrir* também funciona). Isso só é
+   preciso uma vez. O TI pode pular este passo com
+   `xattr -dr com.apple.quarantine /Applications/Veu.app`.
+
+Não precisa de Python, de internet nem de permissão de administrador. Também dá
+para abrir um PDF com *Abrir com → Véu* ou soltando-o no ícone do Dock. A linha
+de comando fica em `/Applications/Veu.app/Contents/MacOS/anonimizar`.
+
 ### Para desenvolver
 
 Requisitos: Python 3.11 ou mais recente (64 bits).
@@ -47,6 +65,15 @@ A preparação é a **única etapa que usa a internet**. Ela baixa:
   reconhecer nomes;
 - o arquivo de idioma do OCR (`por.traineddata`, 8 MB), cujo SHA-256 é
   conferido.
+
+No macOS:
+
+```bash
+python3 -m venv .venv
+.venv/bin/python -m pip install -r requirements.txt
+.venv/bin/python -m pip install -e .
+.venv/bin/python empacotamento/baixar_modelos.py
+```
 
 Depois disso, tudo funciona offline.
 
@@ -197,6 +224,10 @@ campo desconhecido) aparecem em português, indicando o campo com problema.
 acrescente `bloqueada: true` e copie o arquivo para
 `C:\ProgramData\Veu\politica.yaml` em cada máquina (ou via GPO/Intune).
 
+No macOS, `%PROGRAMDATA%\Veu` corresponde a `/Library/Application Support/Veu` e
+`%APPDATA%\Veu` a `~/Library/Application Support/Veu` (distribua via MDM, como
+Jamf ou Intune).
+
 ## PDFs escaneados (OCR)
 
 O Véu decide, página por página, quando aplicar OCR:
@@ -224,7 +255,8 @@ Resolução e ativação do OCR ficam em *Configurações… → OCR e auditoria
 ## Auditoria
 
 A cada anonimização, o Véu grava um **recibo** em
-`%LOCALAPPDATA%\Veu\auditoria\recibos.jsonl` com:
+`%LOCALAPPDATA%\Veu\auditoria\recibos.jsonl` (no macOS,
+`~/Library/Application Support/Veu/auditoria/recibos.jsonl`) com:
 
 - data e hora;
 - usuário do sistema e nome da máquina;
@@ -268,9 +300,12 @@ anonimizar --help
 - Códigos de saída: `0` sucesso · `1` a verificação encontrou problemas ·
   `2` nada foi gerado (falta `--sem-revisao`) · `3` erro de uso ou de arquivo.
 
-Na versão de desenvolvimento, o comando é `.\.venv\Scripts\anonimizar.exe`.
+Na versão de desenvolvimento, o comando é `.\.venv\Scripts\anonimizar.exe`
+(`.venv/bin/anonimizar` no macOS).
 
 ## Empacotamento
+
+### Windows
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File empacotamento\construir.ps1
@@ -290,15 +325,44 @@ O resultado ocupa cerca de 350 MB em pasta e 155 MB compactado. Dentro dela
 estão `Veu.exe`, `anonimizar.exe`, o modelo de nomes, o OCR, os dicionários, a
 política de exemplo e este LEIA-ME.
 
-**macOS e Linux:** ainda não há builds para esses sistemas. O PyInstaller
-precisa rodar em cada sistema operacional, então o `construir.ps1` gera apenas a
-versão para Windows.
+### macOS
+
+```bash
+bash empacotamento/construir.sh
+```
+
+São os mesmos passos do Windows, mais a assinatura. O script:
+
+1. baixa e confere os modelos, roda os testes e gera o ícone (`veu.icns`);
+2. roda o PyInstaller, que gera `dist/Veu.app` com `Veu` e `anonimizar` em
+   `Contents/MacOS/`;
+3. assina o app: *ad hoc* por padrão, ou com o seu certificado se você definir
+   `VEU_IDENTIDADE="Developer ID Application: …"`;
+4. testa o `anonimizar` num prontuário nativo e num escaneado, e o `Veu` com um
+   teste de inicialização;
+5. gera `dist/Veu-<versão>-macos-<arquitetura>.zip`, com o `Veu.app`, a política
+   de exemplo e este LEIA-ME.
+
+O app ocupa cerca de 260 MB, e o `.zip`, 145 MB. Pontos de atenção:
+
+- **Arquitetura:** o resultado só roda na mesma arquitetura do Mac que o
+  construiu. Para Macs Intel, rode o script num Mac Intel (ou num runner
+  `macos-13` do GitHub Actions).
+- **macOS mínimo:** 13. O PySide6 está limitado a versões abaixo da 6.12, porque
+  o Qt 6.12 não abre em macOS anteriores ao 14.4.
+- **Gatekeeper:** sem Developer ID e notarização (`xcrun notarytool`), os
+  usuários precisam liberar o app na primeira abertura (veja *Instalação*).
+
+**Linux:** ainda não há builds.
 
 ## Testes
 
 ```powershell
 .\.venv\Scripts\python.exe -m pytest
 ```
+
+No macOS, `.venv/bin/python -m pytest`. Lá os testes de interface rodam com a
+plataforma `offscreen` do Qt (nenhuma janela aparece).
 
 Os PDFs de teste são **sintéticos, com dados fictícios**: texto nativo, várias
 colunas, tabela, texto quebrado entre linhas, página rotacionada, página

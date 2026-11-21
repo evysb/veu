@@ -5,11 +5,27 @@ from __future__ import annotations
 import os
 import sys
 
-from PySide6.QtCore import QLocale, QTimer
+from PySide6.QtCore import QEvent, QObject, QLocale, QTimer
 from PySide6.QtWidgets import QApplication
 
 from veu.ui.janela_principal import JanelaPrincipal
 from veu.ui.tema import aplicar_tema
+
+
+class _AberturaMac(QObject):
+    """macOS: "Abrir com > Véu" e PDFs soltos no ícone do Dock chegam como QFileOpenEvent, não em sys.argv."""
+
+    def __init__(self, janela: JanelaPrincipal) -> None:
+        super().__init__(janela)
+        self._janela = janela
+
+    def eventFilter(self, obj, event) -> bool:  # noqa: N802 (nome da API do Qt)
+        if event.type() == QEvent.FileOpen:
+            arquivo = event.file()
+            if arquivo.lower().endswith(".pdf"):
+                QTimer.singleShot(0, lambda: self._janela.abrir(arquivo))
+            return True
+        return False
 
 
 def main() -> int:
@@ -19,6 +35,7 @@ def main() -> int:
     app.setOrganizationName("Véu")
     aplicar_tema(app)
     janela = JanelaPrincipal()
+    app.installEventFilter(_AberturaMac(janela))
     janela.show()
     arquivo = next((a for a in sys.argv[1:] if a.lower().endswith(".pdf")), None)
     if arquivo:
@@ -35,6 +52,9 @@ def main() -> int:
             print(f"teste de inicialização: {'ok' if ok else 'FALHOU'}"
                   + (f", {len(janela.analise.deteccoes)} detecções" if janela.analise else ""), flush=True)
             janela.alterado = False
+            # Fecha a janela antes de sair: no macOS, app.exit() sozinho, chamado de um
+            # timer, às vezes não interrompe o laço de eventos do Cocoa e o processo fica aberto.
+            janela.close()
             app.exit(0 if ok else 1)
 
         QTimer.singleShot(1500, verificar)
