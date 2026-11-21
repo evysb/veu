@@ -247,8 +247,9 @@ During verification, Véu rebuilds the page from the images alone (without the
 black boxes on top) and runs OCR again, to prove nothing was left behind.
 
 > ⚠ **OCR can make mistakes**: swapping characters (`O`↔`0`, `@`→`Q`), merging
-> or splitting words, missing small, handwritten or rotated text. An e-mail
-> whose `@` is misrecognized, for example, will not be detected. On OCR pages,
+> or splitting words, missing small, handwritten or rotated text. Véu recognizes
+> e-mails whose `@` was read as `Q`, `©`, `®`, `&` or `(a)`, but other misreadings
+> can still keep a piece of data from being detected. On OCR pages,
 > Véu shows a warning, and **visual review matters even more**. OCR boxes are
 > enlarged automatically, because OCR tends to return tight boxes.
 

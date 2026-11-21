@@ -244,8 +244,9 @@ da imagem**. Na verificação, o Véu reconstrói a página só com as imagens (
 as tarjas pretas por cima) e roda o OCR de novo, para provar que nada restou.
 
 > ⚠ **O OCR pode errar**: trocar letras (`O`↔`0`, `@`→`Q`), juntar ou separar
-> palavras, ignorar texto pequeno, manuscrito ou em ângulo. Um e-mail com o `@`
-> mal reconhecido, por exemplo, não é detectado. Nas páginas com OCR, o Véu
+> palavras, ignorar texto pequeno, manuscrito ou em ângulo. O Véu reconhece
+> e-mails cujo `@` foi lido como `Q`, `©`, `®`, `&` ou `(a)`, mas outros erros de
+> leitura ainda podem impedir que um dado seja detectado. Nas páginas com OCR, o Véu
 > mostra um aviso, e a **revisão visual é ainda mais importante**. As caixas de
 > OCR são alargadas automaticamente, porque o OCR tende a devolver caixas
 > justas.
